@@ -1,0 +1,189 @@
+<?xml version="1.0"?>
+
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <tab id="UPSLTLFreightQuotes" translate="label" sortOrder="10">
+            <label>Eniture - UPS LTL Freight Quotes</label>
+        </tab>
+        <section id="carriers" translate="label" type="text" sortOrder="320" showInDefault="1" showInWebsite="1" showInStore="1">
+            <group id="ENUpsLTL" translate="label" type="text" sortOrder="0" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Eniture - UPS LTL Freight Quotes</label>
+                <field id="active" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enabled For Checkout</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+            </group>
+        </section>
+        <section id="UpsLtlConnSettings" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+            <label>Connection Settings</label>
+            <tab>UPSLTLFreightQuotes</tab>
+            <resource>Eniture_UPSLTLFreightQuotes::config</resource>
+            <group id="first" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Connection Settings</label>
+                <field id="upsltlAccountNumber" translate="label" type="text" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Account Number</label>
+                    <validate>required-entry</validate>
+                </field>
+                <field id="upsltlUsername" translate="label" type="text" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Username</label>
+                    <validate>required-entry</validate>
+                </field>
+                <field id="upsltlPassword" translate="label" type="text" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Password</label>
+                    <validate>required-entry</validate>
+                </field>
+                <field id="upsltlAuthenticationKey" translate="label" type="text" sortOrder="6" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>UPS API Access Key</label>
+                    <validate>required-entry</validate>
+                </field>
+                <field id="upsltlLicnsKey" translate="label" type="text" sortOrder="7" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Plugin License Key</label>
+                    <validate>required-entry</validate>
+                </field>
+                <field id="upsltlAccessLevel" translate="label" type="select" sortOrder="7" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Access Level</label>
+                    <validate>required-entry</validate>
+                    <source_model>Eniture\UPSLTLFreightQuotes\Model\Source\UpsLtlAccessLevel</source_model>
+                </field>
+                <field id="upsltlTestConnection" translate="label" sortOrder="8" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <frontend_model>Eniture\UPSLTLFreightQuotes\Block\System\Config\TestConnection</frontend_model>
+                </field>
+            </group>
+        </section>
+
+        <section id="UpsLtlWarehouse" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+            <label>Warehouses</label>
+            <tab>UPSLTLFreightQuotes</tab>
+            <resource>Eniture_UPSLTLFreightQuotes::config</resource>
+            <group id="second" translate="label" type="text" sortOrder="15" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Warehouses</label>
+                <field id="EnitureWarehouse" translate="label" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <frontend_model>Eniture\UPSLTLFreightQuotes\Block\System\Config\WarehouseTable</frontend_model>
+                </field>
+                <field id="EnitureDropship" translate="label" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <frontend_model>Eniture\UPSLTLFreightQuotes\Block\System\Config\DropshipTable</frontend_model>
+                </field>
+            </group>
+        </section>
+
+        <section id="UpsLtlQuoteSetting" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+            <label>Quote Settings</label>
+            <tab>UPSLTLFreightQuotes</tab>
+            <resource>Eniture_UPSLTLFreightQuotes::config</resource>
+            <group id="third" translate="label" type="select" sortOrder="15" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Quote Settings</label>
+
+                <field id="labelAs" translate="label" type="text" sortOrder="14" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Label As</label>
+                    <comment><![CDATA[What the user sees during checkout e.g. "LTL Freight". If left blank "Freight" will display as the shipping method.]]></comment>
+                </field>
+
+                <field id="dlrvyEstimates" translate="label" type="select" sortOrder="15" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Show Delivery Estimate</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+
+                <field id="residentialDlvry" translate="label" type="select" sortOrder="16" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Always Quote Residential Delivery</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+
+                <field id="residentialAddressDetect" translate="label" type="select" sortOrder="17" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Residential Address Detection</label>
+                    <frontend_model>Eniture\UPSLTLFreightQuotes\Block\System\Config\ResidentialAddressDetection</frontend_model>
+                </field>
+
+                <field id="liftGate" translate="label" type="select" sortOrder="18" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Always quote lift gate delivery</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+
+                <field id="OfferLiftgateAsAnOption" translate="label" type="select" sortOrder="19" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Offer lift gate delivery as an option</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+
+                <field id="RADforLiftgate" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Always include lift gate delivery when a residential address is detected</label>
+                    <frontend_model>Eniture\UPSLTLFreightQuotes\Block\System\Config\RADforLiftgate</frontend_model>
+                </field>
+
+                <field id="handlingUnitWeight" translate="label" type="text" sortOrder="21" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Weight of Handling Unit</label>
+                    <validate>validate-number validate-greater-than-zero validate-length maximum-length-7 validate-upsLt-decimal-limit-3</validate>
+                    <comment><![CDATA[Enter in pounds the weight of your pallet, skid, crate or other type of handling unit.]]></comment>
+                </field>
+
+                <field id="maxWeightPerUnit" translate="label" type="text" sortOrder="22" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Maximum Weight per Handling Unit</label>
+                    <validate>validate-number validate-greater-than-zero validate-digits validate-length maximum-length-5 validate-upsLt-decimal-limit-3 validate-upsLt-max-weight-20k</validate>
+                    <comment><![CDATA[Enter in pounds the maximum weight that can be placed on the handling unit. ]]></comment>
+                </field>
+
+                <field id="hndlngFee" translate="label" type="text" sortOrder="23" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Handling Fee / Markup</label>
+                    <validate>validate-number validate-length maximum-length-7 validate-upsLt-decimal-limit-2</validate>
+                </field>
+
+                <field id="symbolicHndlngFee" translate="label" type="select" sortOrder="24" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Handling Fee Symbol</label>
+                    <source_model>Eniture\UPSLTLFreightQuotes\Model\Source\HandlingFee</source_model>
+                    <comment><![CDATA[Amount excluding tax.  Enter an amount e.g 3.75 or 15 and select the quantifier e.g Flat Rate or Percentage. Leave blank to disable.]]></comment>
+                </field>
+
+                <field id="shipperRelation" translate="label" type="select" sortOrder="25" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Relationship to Shipper</label>
+                    <source_model>Eniture\UPSLTLFreightQuotes\Model\Source\ShipperRelationship</source_model>
+                    <comment><![CDATA[How you identify yourself when getting quotes on ups.com.]]></comment>
+                </field>
+
+                <field id="thirdPartyCountry" translate="label" type="select" sortOrder="26" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Third Party Country or Territory </label>
+                    <depends>
+                        <field id="shipperRelation">ThirdParty</field>
+                    </depends>
+                    <source_model>Eniture\UPSLTLFreightQuotes\Model\Source\ThirdPartyCountry</source_model>
+                    <validate>required-entry</validate>
+                </field>
+
+                <field id="thirdPartyPostalCode" translate="label" type="text" sortOrder="27" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Third Party Postal Code</label>
+                    <validate>required-entry validate-alphanum validate-length maximum-length-6 validate-upsLt-thirdparty </validate>
+                    <depends>
+                        <field id="shipperRelation">ThirdParty</field>
+                    </depends>
+                    <comment><![CDATA[Enter the Third Party Postal Code. (For US, enter only the 5 digit zip code.)]]></comment>
+                </field>
+
+                <field id="weightExeeds" translate="label" type="select" sortOrder="28" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Return LTL quotes when an order's parcel shipment weight exceeds 150 lbs</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[When selected, the LTL Freight Quote plugin will return quotes when an order's total weight exceeds 150 lbs (the maximum permitted by FedEx and UPS), even if none of the products have settings to indicate that it will ship LTL. To increase the accuracy of the returned quote(s), all products should have accurate weights and dimensions.]]></comment>
+                </field>
+
+<!--                These fields are placed here for style suitability only-->
+                <field id="thirdPartyState" translate="label" type="hidden" sortOrder="29" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Third Party State</label>
+            </field>
+
+                <field id="thirdPartyCity" translate="label" type="hidden" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Third Party City </label>
+                </field>
+
+
+            </group>
+        </section>
+
+        <section id="UpsLtlUserGuide" translate="label" type="text" sortOrder="31" showInDefault="1" showInWebsite="1" showInStore="1">
+            <label>User Guide</label>
+            <tab>UPSLTLFreightQuotes</tab>
+            <resource>Eniture_UPSLTLFreightQuotes::config</resource>
+            <group id="fourth" translate="label" type="text" sortOrder="26" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>User Guide</label>
+                <field id="upsltlUserGuide" translate="label" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <frontend_model>Eniture\UPSLTLFreightQuotes\Block\System\Config\UserGuide</frontend_model>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>

@@ -1,0 +1,33 @@
+<?php
+
+$planMsg  = $block->upsLtlPlanNotice();
+$connMsg  = $block->upsLtlConnMsg();
+?>
+<script>
+    require(['jquery','domReady!'], function($){
+            var carrierdiv = '#UpsLtlConnSettings_first-head';
+            upsLtlNotesToggleHandling($, '<?= $block->escapeHtml($connMsg, ['a', 'div']); ?>', '.upsltl-conn-setting-note', carrierdiv);
+            upsLtlCurrentPlanNote($, '<?= $block->escapeHtml($planMsg, ['a', 'div']); ?>', carrierdiv);
+    });
+</script>
+<div class="pp-buttons-container">
+    <button class="primary" id="<?= $block->escapeHtml($block->getId()) ?>" connAjaxUrl="<?= $block->escapeHtml($block->getAjaxCheckUrl()) ?>">
+        <span><span><span><?php echo $block->escapeHtml($block->getButtonLabel()); ?></span></span></span>
+    </button>
+</div>
+
+<!-- Display Success Message -->
+<div id="upsltl-sucss-con"  style="display: none; margin-top: 20px; padding-right: 3px;"class="message message-success success">
+    <div data-ui-id="messages-message-success">
+    <span id="succesText">
+    </span>
+    </div>
+</div>
+
+<!-- Display Error Message -->
+<div id="upsltl-fail-con"  style="display: none; margin-top: 20px; padding-right: 3px;"class="message message-error error">
+    <div data-ui-id="messages-message-error">
+    <span id="errorText">
+    </span>
+    </div>
+</div>

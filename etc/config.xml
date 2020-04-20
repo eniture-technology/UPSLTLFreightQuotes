@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <UpsLtlQuoteSetting>
+            <third>
+                <carrierList>UPS_FREIGHT</carrierList>
+            </third>
+        </UpsLtlQuoteSetting>
+        <carriers>
+            <ENUpsLTL>
+                <active>1</active>
+                <sallowspecific>0</sallowspecific>
+                <price>0</price>
+                <model>Eniture\UPSLTLFreightQuotes\Model\Carrier\UpsLTLShipping</model>
+                <allowed_methods>UPS_FREIGHT</allowed_methods>
+                <name>UPS LTL Freight Quotes</name>
+                <title>UPS LTL Freight Quotes</title>
+                <specificerrmsg>This shipping method is not available. To use this shipping method, please contact us.</specificerrmsg>
+            </ENUpsLTL>
+        </carriers>
+    </default>
+</config>
