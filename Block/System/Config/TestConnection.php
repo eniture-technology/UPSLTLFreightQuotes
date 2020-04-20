@@ -9,7 +9,7 @@ use Magento\Framework\Data\Form\Element\AbstractElement;
 class TestConnection extends Field
 {
     const BUTTON_TEMPLATE = 'system/config/testconnection.phtml';
- 
+
     private $dataHelper;
 
     /**
@@ -25,7 +25,7 @@ class TestConnection extends Field
         $this->dataHelper = $dataHelper;
         parent::__construct($context, $data);
     }
-    
+
     /**
      * @return $this
      */
@@ -79,6 +79,6 @@ class TestConnection extends Field
 
     public function upsLtlConnMsg()
     {
-        return '<div class="message message-notice notice upsltl-conn-setting-note"><div data-ui-id="messages-message-notice">Note! You must have a UPS account to use this application. If you do not have one, contact UPS at 800-463-3339 or <a target="_blank" href="https://www.ups.com/en-us/create-account.html">register online</a>.</div></div>';
+        return '<div class="message message-notice notice upsltl-conn-setting-note"><div data-ui-id="messages-message-notice">Note! You must have a UPS account to use this application. If you do not have one, contact UPS at 800-463-3339 or <a target="_blank" href="https://www.ups.com/doapp/signup">register online</a>.</div></div>';
     }
 }
