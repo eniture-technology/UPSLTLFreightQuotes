@@ -55,7 +55,7 @@ class PlanUpgrade
         $webhookUrl = $domain.'upsltlfreightquotes';
         $postData = http_build_query([
                 'platform'      => 'magento2',
-                'carrier'       => '73',
+                'carrier'       => '75',
                 'store_url'     => $domain,
                 'webhook_url'   => $webhookUrl,
             ]);
