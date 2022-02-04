@@ -45,6 +45,11 @@
                     <validate>required-entry</validate>
                     <source_model>Eniture\UPSLTLFreightQuotes\Model\Source\UpsLtlAccessLevel</source_model>
                 </field>
+                <field id="upsltlAccountType" translate="label" type="select" sortOrder="8" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>UPS rates my freight based on weight and...</label>
+                    <validate>required-entry</validate>
+                    <source_model>Eniture\UPSLTLFreightQuotes\Model\Source\UpsLtlAccountType</source_model>
+                </field>
                 <field id="upsltlTestConnection" translate="label" sortOrder="8" showInDefault="1" showInWebsite="1" showInStore="1">
                     <frontend_model>Eniture\UPSLTLFreightQuotes\Block\System\Config\TestConnection</frontend_model>
                 </field>
@@ -163,22 +168,33 @@
 
 <!--                These fields are placed here for style suitability only-->
                 <field id="thirdPartyState" translate="label" type="hidden" sortOrder="29" showInDefault="1" showInWebsite="1" showInStore="1">
-                <label>Third Party State</label>
-            </field>
-
-                <field id="thirdPartyCity" translate="label" type="hidden" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Third Party City </label>
+                    <label>Third Party State</label>
                 </field>
 
+                <field id="thirdPartyCity" translate="label" type="hidden" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Third Party City</label>
+                </field>
 
             </group>
         </section>
 
-        <section id="UpsLtlUserGuide" translate="label" type="text" sortOrder="31" showInDefault="1" showInWebsite="1" showInStore="1">
+        <section id="UpsLtlPalletPackagingTab" translate="label" type="text" sortOrder="31" showInDefault="1" showInWebsite="1" showInStore="1">
+            <label>Pallet Packaging</label>
+            <tab>UPSLTLFreightQuotes</tab>
+            <resource>Eniture_UPSLTLFreightQuotes::config</resource>
+            <group id="fifth" translate="label" type="text" sortOrder="26" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Pallet Packaging</label>
+                <field id="upsltlPalletPackaging" translate="label" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <frontend_model>Eniture\UPSLTLFreightQuotes\Block\System\Config\PalletPackagingTab</frontend_model>
+                </field>
+            </group>
+        </section>
+
+        <section id="UpsLtlUserGuide" translate="label" type="text" sortOrder="32" showInDefault="1" showInWebsite="1" showInStore="1">
             <label>User Guide</label>
             <tab>UPSLTLFreightQuotes</tab>
             <resource>Eniture_UPSLTLFreightQuotes::config</resource>
-            <group id="fourth" translate="label" type="text" sortOrder="26" showInDefault="1" showInWebsite="1" showInStore="1">
+            <group id="fourth" translate="label" type="text" sortOrder="27" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>User Guide</label>
                 <field id="upsltlUserGuide" translate="label" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
                     <frontend_model>Eniture\UPSLTLFreightQuotes\Block\System\Config\UserGuide</frontend_model>

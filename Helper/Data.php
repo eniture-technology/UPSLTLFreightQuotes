@@ -11,6 +11,7 @@ use Magento\Framework\Registry;
 use Magento\Framework\Session\SessionManagerInterface;
 use Magento\Shipping\Model\Config;
 use Magento\Store\Model\ScopeInterface;
+use Magento\Framework\ObjectManagerInterface;
 
 /**
  * Class Data
@@ -76,6 +77,10 @@ class Data extends AbstractHelper
      * @var Manager
      */
     private $cacheManager;
+    /**
+     * @var ObjectManagerInterface
+     */
+    private $objectManager;
 
     /**
      * @param Context $context
@@ -95,7 +100,8 @@ class Data extends AbstractHelper
         Curl $curl,
         Registry $registry,
         SessionManagerInterface $coreSession,
-        Manager $cacheManager
+        Manager $cacheManager,
+        ObjectManagerInterface $objectmanager
     ) {
         $this->moduleManager      = $context->getModuleManager();
         $this->connection         = $resource->getConnection(ResourceConnection::DEFAULT_CONNECTION);
@@ -106,6 +112,7 @@ class Data extends AbstractHelper
         $this->registry           = $registry;
         $this->coreSession        = $coreSession;
         $this->cacheManager       = $cacheManager;
+        $this->objectManager = $objectmanager;
         parent::__construct($context);
     }
     
@@ -391,17 +398,21 @@ class Data extends AbstractHelper
      * This function send request and return response
      * $isAssocArray Parameter When TRUE, then returned objects will
      * be converted into associative arrays, otherwise its an object
-     * @param string $url
-     * @param array $postData
-     * @param bool $isAssocArray
-     * @return object|array
+     * @param $url
+     * @param $postData
+     * @param $isAssocArray
+     * @return string
      */
     public function upsLTLSendCurlRequest($url, $postData, $isAssocArray = false)
     {
         $fieldString = http_build_query($postData);
-        $this->curl->post($url, $fieldString);
-        $output = $this->curl->getBody();
-        $result = json_decode($output, $isAssocArray);
+        try {
+            $this->curl->post($url, $fieldString);
+            $output = $this->curl->getBody();
+            $result = json_decode($output, $isAssocArray);
+        } catch (\Throwable $e) {
+            $result = [];
+        }
         return $result;
     }
 
@@ -420,7 +431,7 @@ class Data extends AbstractHelper
             return $this->getOriginsMinimumQuotes($quotes);
         }
 
-        $allQuotes = $odwArr = $hazShipmentArr = [];
+        $allQuotes = $odwArr = $hazShipmentArr = $palletPackagingArr = [];
         $count = 0;
         foreach ($quotes as $origin => $quote) {
             if (isset($quote->severity)) {
@@ -447,6 +458,9 @@ class Data extends AbstractHelper
                     $hazShipmentArr[$origin] = $quote->hazardousStatus == 'y' ?  'Y' : 'N';
                 }
 
+                $palletPackaging = $this->setPalletPackagingData($quote, $origin);
+                $palletPackagingArr[] = $palletPackaging;
+
                 foreach ($quote as $key => $data) {
                     if (isset($data->serviceType)) {
                         $dlvryEsti = $data->transitTime ?? '';
@@ -467,6 +481,7 @@ class Data extends AbstractHelper
                             $originQuotes['liftgate']['rate']  = $lgPrice;
                             $originQuotes['liftgate']['title'] = $lgTitle.$append;
                         }
+
                     }
                 }
             }
@@ -482,6 +497,9 @@ class Data extends AbstractHelper
         $multiShipment = $count > 1 ? true : false;
         $odwArr = $multiShipment ? $odwArr : [];
         $this->setOrderDetailWidgetData($odwArr, $hazShipmentArr);
+
+        $this->coreSession->start();
+        $this->coreSession->setUpsLtlPalletPackaging($palletPackagingArr);
 
         $allQuotes = $this->getFinalQuotesArray($allQuotes, $multiShipment);
 
@@ -675,7 +693,7 @@ class Data extends AbstractHelper
      */
     public function getOriginsMinimumQuotes($quotes)
     {
-        $minIndexArr = [];
+        $minIndexArr = $palletPackagingArr = [];
         $resiArr = ['residential' => false, 'label' => ''];
         $hazShipment = $resi = '';
         $counter = 0;
@@ -685,6 +703,9 @@ class Data extends AbstractHelper
             if (isset($quote->severity)) {
                 return [];
             }
+
+            $palletPackaging = $this->setPalletPackagingData($quote, $origin);
+            $palletPackagingArr[] = $palletPackaging;
 
             if ($counter == 0) { //To be checked only once
                 $isRad = $quote->autoResidentialsStatus ?? '';
@@ -715,6 +736,9 @@ class Data extends AbstractHelper
             }
             $minIndexArr[$origin] = $currentArray;
         }
+
+        $this->coreSession->start();
+        $this->coreSession->setSemiPalletPackaging($palletPackagingArr);
         return $minIndexArr;
     }
 
@@ -737,14 +761,13 @@ class Data extends AbstractHelper
     /**
      * @return string
      */
-    public function upsLtlSetPlanNotice()
+    public function upsLtlSetPlanNotice($planRefreshUrl = '')
     {
-        $planMsg = '';
         $planPackage = $this->upsLtlPlanName('ENUpsLTL');
         if (is_null($planPackage['storeType'])) {
             $planPackage = [];
         }
-        $planMsg = $this->displayPlanMessages($planPackage);
+        $planMsg = $this->displayPlanMessages($planPackage, $planRefreshUrl);
         return $planMsg;
     }
 
@@ -752,14 +775,22 @@ class Data extends AbstractHelper
      * @param type $planPackage
      * @return type
      */
-    public function displayPlanMessages($planPackage)
+    public function displayPlanMessages($planPackage, $planRefreshUrl = '')
     {
-        $planMsg = __('Eniture - UPS LTL Freight Quotes plan subscription is inactive. Please activate plan subscription from <a target="_blank" href="https://eniture.com/magento2-ups-ltl-freight/">here</a>.');
+        $planRefreshLink = '';
+        if (!empty($planRefreshUrl)) {
+            $planRefreshLink = ', <a href="javascript:void(0)" id="ups-ltl-plan-refresh-link" planRefAjaxUrl = '.$planRefreshUrl.' onclick="upsLTLPlanRefresh(this)" >click here</a> to update the license info. Afterward, sign out of Magento and then sign back in';
+            $planMsg = __('The subscription to the UPS LTL Freight Quotes module is inactive. If you believe the subscription should be active and you recently changed plans (e.g. upgraded your plan), your firewall may be blocking confirmation from our licensing system. To resolve the situation, <a href="javascript:void(0)" id="plan-refresh-link" planRefAjaxUrl = '.$planRefreshUrl.' onclick="upsLTLPlanRefresh(this)" >click this link</a> and then sign in again. If this does not resolve the issue, log in to eniture.com and verify the license status.');
+        }else{
+            $planMsg = __('The subscription to the UPS LTL Freight Quotes module is inactive. Please log into eniture.com and update your license.');
+        }
+
         if (isset($planPackage) && !empty($planPackage)) {
-            if ($planPackage['planNumber'] !== null && $planPackage['planNumber'] != '-1') {
-                $planMsg = __('Eniture - UPS LTL Freight Quotes is currently on the '.$planPackage['planName'].'. Your plan will expire within '.$planPackage['expireDays'].' days and plan renews on '.$planPackage['expiryDate'].'.');
+            if (!empty($planPackage['planNumber']) && $planPackage['planNumber'] != '-1') {
+                $planMsg = __('The UPS LTL Freight Quotes from Eniture Technology is currently on the '.$planPackage['planName'].' and will renew on '.$planPackage['expiryDate'].'. If this does not reflect changes made to the subscription plan'.$planRefreshLink.'.');
             }
         }
+
         return $planMsg;
     }
 
@@ -829,12 +860,35 @@ class Data extends AbstractHelper
     }
 
     /**
-     *
+     * Function to clear cache
      */
     public function clearCache()
     {
         $types = $this->cacheManager->getAvailableTypes();
         $this->cacheManager->flush($types);
         $this->cacheManager->clean($types);
+    }
+
+    /**
+     * Function that returns Pallet Packaging helper object
+     */
+    public function getPalletPackagingHelper()
+    {
+        return $this->objectManager->get("Eniture\PalletPackaging\Helper\Data");
+    }
+
+    /**
+     * Function to set Pallet Packaging data
+     * @param type $quote
+     * @param type $key
+     * @return array
+     */
+    public function setPalletPackagingData($quote, $key)
+    {
+        $palletPackaging = [];
+        if (isset($quote->standardPackagingData)) {
+            $palletPackaging[$key]['upsLtlServices'] = $quote->standardPackagingData ;
+        }
+        return $palletPackaging;
     }
 }

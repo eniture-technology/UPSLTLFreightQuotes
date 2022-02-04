@@ -82,7 +82,6 @@
     }
 
     function upsLtlThirdPartyDataSet(data) {
-        console.log(data);
         /*if (!data.error){
             thirdPartyValidation(data);
         }else{*/
@@ -103,7 +102,6 @@
                 jQuery("#UpsLtlQuoteSetting_third_thirdPartyState").val(data.state);
                 jQuery("#UpsLtlQuoteSetting_third_thirdPartyCountry").val(data.country);
             }else if (data.msg){
-                console.log(data);
 
             }
             thirdPartyValidation(data);
@@ -174,7 +172,6 @@
 
         setTimeout(function () {
                 if ($(carrierdiv).attr('class') === 'open') {
-                    console.log('');
                     $(carrierdiv).after(divafter);
                 }
         },1000);
@@ -313,5 +310,5 @@
     }
 
     function thirdPartyValidation(data) {
-        console.log(jQuery.validator);
+        // console.log(jQuery.validator);
     }

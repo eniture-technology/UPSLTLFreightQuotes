@@ -27,6 +27,10 @@ class PlanUpgrade
      * @var ConfigInterface
      */
     private $resourceConfig;
+    /**
+     * @var ScopeConfigInterface
+     */
+    private $scopeConfig;
 
     /**
      * @param StoreManagerInterface $storeManager
@@ -38,11 +42,13 @@ class PlanUpgrade
         StoreManagerInterface $storeManager,
         Curl $curl,
         ConfigInterface $resourceConfig,
+        ScopeConfigInterface $scopeConfig,
         LoggerInterface $logger
     ) {
         $this->storeManager     = $storeManager;
         $this->curl             = $curl;
         $this->resourceConfig   = $resourceConfig;
+        $this->scopeConfig      = $scopeConfig;
         $this->logger           = $logger;
     }
 
@@ -52,12 +58,18 @@ class PlanUpgrade
     public function execute()
     {
         $domain = $this->storeManager->getStore()->getUrl();
+        $licenseKey = $this->scopeConfig->getValue(
+            'UpsLtlConnSettings/first/upsltlLicnsKey',
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE
+        );
+
         $webhookUrl = $domain.'upsltlfreightquotes';
         $postData = http_build_query([
                 'platform'      => 'magento2',
                 'carrier'       => '75',
                 'store_url'     => $domain,
                 'webhook_url'   => $webhookUrl,
+                'license_key'   => ($licenseKey) ?? '',
             ]);
         $url = EnConstants::PLAN_URL;
         $this->curl->post($url, $postData);

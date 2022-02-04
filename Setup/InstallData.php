@@ -3,16 +3,13 @@
 namespace Eniture\UPSLTLFreightQuotes\Setup;
  
 use Eniture\UPSLTLFreightQuotes\App\State;
-use Eniture\UPSLTLFreightQuotes\Cron\PlanUpgrade;
 use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\ProductFactory;
 use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
 use Magento\Eav\Model\Config;
 use Magento\Eav\Model\Entity\Attribute\ScopedAttributeInterface;
-use Magento\Eav\Setup\EavSetup;
 use Magento\Eav\Setup\EavSetupFactory;
 use Magento\Framework\App\Config\ConfigResource\ConfigInterface;
-use Magento\Framework\App\ProductMetadataInterface;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\HTTP\Client\Curl;
 use Magento\Framework\Setup\InstallDataInterface;
@@ -41,21 +38,9 @@ class InstallData implements InstallDataInterface
      */
     private $attrNames;
     /**
-     * @var Customer Session
-     */
-    private $customerSession;
-    /**
      * @var DB Connection
      */
     private $connection;
-    /**
-     * @var Magento Version
-     */
-    private $mageVersion;
-    /**
-     * @var ProductMetadataInterface
-     */
-    private $productMetadata;
     /**
      * @var CollectionFactory
      */
@@ -81,50 +66,43 @@ class InstallData implements InstallDataInterface
      */
     private $resourceConfig;
     /**
-     * @var PlanUpgrade
-     */
-    private $planUpgrade;
-    /**
      * @var Config
      */
     private $eavConfig;
+    /**
+     * @var $haveTsAttributes
+     */
+    private $haveTsAttributes = false;
 
     /**
      * InstallData constructor.
      * @param EavSetupFactory $eavSetupFactory
      * @param State $state
-     * @param ProductMetadataInterface $productMetadata
      * @param CollectionFactory $collectionFactory
      * @param ProductFactory $productLoader
      * @param ResourceConnection $resource
      * @param Curl $curl
      * @param ConfigInterface $resourceConfig
-     * @param PlanUpgrade $planUpgrade
      * @param Config $eavConfig
      */
     public function __construct(
         EavSetupFactory $eavSetupFactory,
         State $state,
-        ProductMetadataInterface $productMetadata,
         CollectionFactory $collectionFactory,
         ProductFactory $productLoader,
         ResourceConnection $resource,
         Curl $curl,
         ConfigInterface $resourceConfig,
-        PlanUpgrade $planUpgrade,
         Config $eavConfig
     ) {
         $this->eavSetupFactory      = $eavSetupFactory;
         $this->state                = $state;
-        $this->productMetadata      = $productMetadata;
         $this->collectionFactory    = $collectionFactory;
         $this->productLoader        = $productLoader;
         $this->resource             = $resource;
         $this->connection           = $resource->getConnection(ResourceConnection::DEFAULT_CONNECTION);
-        $this->mageVersion          = $this->productMetadata->getVersion();
         $this->curl                 = $curl;
         $this->resourceConfig       = $resourceConfig;
-        $this->planUpgrade          = $planUpgrade;
         $this->eavConfig            = $eavConfig;
     }
 
@@ -138,15 +116,12 @@ class InstallData implements InstallDataInterface
     ) {
         
         $this->state->validateAreaCode();
-        // Check plan info of current module
-        $this->planUpgrade->execute();
         $installer = $setup;
         $installer->startSetup();
         $eavSetup = $this->eavSetupFactory->create(['setup' => $setup]);
 
         $this->getTableNames();
         $this->attrNames();
-        $this->renameOldAttributes();
         $this->createOrderDetailAttr($installer);
 
         $this->addUpsLTLAttributes($installer, $eavSetup);
@@ -159,7 +134,7 @@ class InstallData implements InstallDataInterface
     }
 
     /**
-     *
+     * Set Table names array
      */
     public function getTableNames()
     {
@@ -172,58 +147,15 @@ class InstallData implements InstallDataInterface
     }
 
     /**
-     *
+     * Set attributes arr
      */
     public function attrNames()
     {
-        $dimAttr = [
-            'length'            => 'length',
-            'width'             => 'width',
-            'height'            => 'height',
-            'ltl_check'         => 'ltl_check',
+        $this->attrNames = [
+            'length' => 'length',
+            'width'  => 'width',
+            'height' => 'height'
         ];
-        $dsAttr = [
-            'dropship'          => 'dropship',
-            'dropship_location' => 'dropship_location'
-        ];
-
-        $this->attrNames = ($this->mageVersion >= '2.2.5') ? $dsAttr : array_merge($dsAttr, $dimAttr);
-    }
-
-    /**
-     *
-     */
-    public function renameOldAttributes()
-    {
-        if ($this->mageVersion < '2.2.5') {
-            $attributes = $this->attrNames;
-            foreach ($attributes as $key => $attr) {
-                $selectSql = "SELECT count(*) AS count FROM ".$this->tableNames['eav_attribute']." WHERE attribute_code = 'ups_".$attr."'";
-                $isExist = $this->connection->fetchOne($selectSql);
-                if ($isExist == 1) {
-                    $updateSql = "UPDATE ".$this->tableNames['eav_attribute']." SET attribute_code = 'en_".$attr."', is_required = 0 WHERE attribute_code = 'ups_".$attr."'";
-                    $this->connection->query($updateSql);
-                }
-            }
-        } else {
-            $selectSql = "SELECT count(*) AS count FROM ".$this->tableNames['eav_attribute']." WHERE attribute_code = 'ups_ltl_check'";
-            $isExist = $this->connection->fetchOne($selectSql);
-            if ($isExist == 1) {
-                $updateSql = "UPDATE ".$this->tableNames['eav_attribute']." SET attribute_code = 'en_ltl_check', is_required = 0 WHERE attribute_code = 'ups_ltl_check'";
-                $this->connection->query($updateSql);
-            }
-        }
-
-        $isspeedFreightExist = $this->connection->fetchOne("select count(*) as count From ".$this->tableNames['eav_attribute']." where attribute_code = 'speedFraightClass'");
-
-        if ($isspeedFreightExist == 1) {
-            $dataArr = [
-                'attribute_code'    => 'speed_freight_class',
-                'source_model'      => 'Eniture\UPSLTLFreightQuotes\Model\Source\UpsLTLFreightClass',
-            ];
-
-            $this->connection->update($this->tableNames['eav_attribute'], $dataArr, "attribute_code='speedFraightClass'");
-        }
     }
 
     /**
@@ -235,9 +167,9 @@ class InstallData implements InstallDataInterface
             $installer->getTable('sales_order'),
             'order_detail_data',
             [
-                'type' => \Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
+                'type' => Table::TYPE_TEXT,
                 'nullable' => true,
-                'default'   => '',
+                'default' => '',
                 'comment' => 'Order Detail Widget Data'
             ]
         );
@@ -251,80 +183,40 @@ class InstallData implements InstallDataInterface
         $installer,
         $eavSetup
     ) {
-        $attributes = $this->attrNames;
-        if ($this->mageVersion < '2.2.5') {
-            unset($attributes['dropship'], $attributes['dropship_location']);
-            $count = 65;
-            foreach ($attributes as $key => $attr) {
-                $isExist = $this->eavConfig
-                    ->getAttribute('catalog_product', 'en_'.$attr.'')->getAttributeId();
-                if ($isExist == null) {
-                    $this->getAttributeArray(
-                        $eavSetup,
-                        'en_'.$attr,
-                        \Magento\Framework\DB\Ddl\Table::TYPE_DECIMAL,
-                        ucfirst($attr),
-                        'text',
-                        '',
-                        $count
-                    );
+        $count = 71;
+        foreach ($this->attrNames as $key => $attr) {
+            if ($attr == 'length' || $attr == 'width' || $attr == 'height') {
+                $isTsAttExists = $this->eavConfig
+                    ->getAttribute('catalog_product', 'ts_dimensions_' . $attr . '')->getAttributeId();
+                if ($isTsAttExists != null) {
+                    $this->haveTsAttributes = true;
+                    continue;
                 }
-                $count++;
             }
+            $isExist = $this->eavConfig
+                ->getAttribute('catalog_product', 'en_' . $attr . '')->getAttributeId();
+            if ($isExist == null) {
+                $this->getAttributeArray(
+                    $eavSetup,
+                    'en_' . $attr,
+                    Table::TYPE_DECIMAL,
+                    ucfirst($attr),
+                    'text',
+                    '',
+                    $count
+                );
+            }
+            $count++;
         }
 
         $isLTLCheckExist = $this->connection->fetchOne("select count(*) as count From ".$this->tableNames['eav_attribute']." where attribute_code = 'en_ltl_check'");
 
         if ($isLTLCheckExist == 0) {
-            $this->getAttributeArray($eavSetup, 'en_ltl_check', 'int', 'Ship Via LTL Freight', 'select', 'Magento\Eav\Model\Entity\Attribute\Source\Boolean', 74);
+            $this->getAttributeArray($eavSetup, 'en_ltl_check', 'int', 'Ship Via LTL Freight', 'select', 'Magento\Eav\Model\Entity\Attribute\Source\Boolean', 78);
         }
 
-        $isspeedFraightClassExist = $this->connection->fetchOne("select count(*) as count From ".$this->tableNames['eav_attribute']." where attribute_code = 'speed_freight_class'");
+        $this->getAttributeArray($eavSetup, 'en_freight_class', 'int', 'Freight Class', 'select', 'Eniture\UPSLTLFreightQuotes\Model\Source\UpsLTLFreightClass', 79);
 
-        if ($isspeedFraightClassExist == 0) {
-            $this->getAttributeArray($eavSetup, 'en_freight_class', 'int', 'Freight Class', 'select', 'Eniture\UPSLTLFreightQuotes\Model\Source\UpsLTLFreightClass', 75);
-        } else {
-            $dataArr = [
-                'attribute_code'    => 'speed_freight_class',
-                'source_model'      => 'Eniture\UPSLTLFreightQuotes\Model\Source\UpsLTLFreightClass',
-            ];
-            $this->connection->update($this->tableNames['eav_attribute'], $dataArr, "attribute_code='speed_freight_class'");
-
-            $isDensityExist = $this->connection->fetchOne("Select count(*) as count
-                                            From ".$this->tableNames['eav_attribute_option_value']." ov
-                                            Where ov.value = 'Density Based'
-                                            AND (
-                                                    select count(*)
-                                                    From ".$this->tableNames['eav_attribute_option']." ao
-                                                    Where ao.option_id = ov.option_id
-                                                    AND (
-                                                        select count(*)
-                                                        From ".$this->tableNames['eav_attribute']." ea
-                                                        Where ea.attribute_id = ao.attribute_id
-                                                        AND ea.attribute_code = 'speed_freight_class'
-                                                            ) > 0
-                                            ) > 0");
-
-            if ($isDensityExist == 0) {
-                $query1 = "INSERT INTO ".$this->tableNames['eav_attribute_option']." (attribute_id, sort_order)
-                                Select attribute_id, 20
-                                From ".$this->tableNames['eav_attribute']." ea
-                                Where ea.attribute_code = 'speed_freight_class'";
-                $this->connection->query($query1);
-
-                $query2 = "INSERT INTO ".$this->tableNames['eav_attribute_option_value']." (value_id, option_id, store_id, value)
-                                Select option_id, option_id, 0, 'Density Based'
-                                From ".$this->tableNames['eav_attribute_option']." op
-                                Where 
-                                ( select count(*)
-                                    from ".$this->tableNames['eav_attribute']." e
-                                    Where e.attribute_code = 'speed_freight_class'
-                                )>0
-                                AND op.sort_order = 20";
-                $this->connection->query($query2);
-            }
-        }
-        
         $isendropshipExist = $this->eavConfig->getAttribute('catalog_product', 'en_dropship')->getAttributeId();
 
         if ($isendropshipExist == null) {
@@ -335,7 +227,7 @@ class InstallData implements InstallDataInterface
                 'Enable Drop Ship',
                 'select',
                 'Magento\Eav\Model\Entity\Attribute\Source\Boolean',
-                71
+                74
             );
         }
 
@@ -349,7 +241,7 @@ class InstallData implements InstallDataInterface
                 'Drop Ship Location',
                 'select',
                 'Eniture\UPSLTLFreightQuotes\Model\Source\DropshipOptions',
-                72
+                75
             );
         } else {
             $dataArr = [
@@ -369,7 +261,7 @@ class InstallData implements InstallDataInterface
                 'Hazardous Material',
                 'select',
                 'Magento\Eav\Model\Entity\Attribute\Source\Boolean',
-                73
+                76
             );
         }
 
@@ -504,7 +396,6 @@ class InstallData implements InstallDataInterface
             $installer->getConnection()->createTable($table);
         }
 
-
         $newModuleName  = 'ENUpsLTL';
         $scriptName     = 'Eniture_UPSLTLFreightQuotes';
         $isNewModuleExist  = $this->connection->fetchOne(
@@ -531,14 +422,14 @@ class InstallData implements InstallDataInterface
     {
         $lengthChange = $widthChange = $heightChange = false;
 
-        if ($this->mageVersion > '2.2.4') {
+        if ($this->haveTsAttributes) {
             $productCollection = $this->collectionFactory->create()->addAttributeToSelect('*');
             foreach ($productCollection as $_product) {
                 $product = $this->productLoader->create()->load($_product->getEntityId());
 
-                $savedEnLength  = $_product->getData('en_length');
-                $savedEnWidth   = $_product->getData('en_width');
-                $savedEnHeight  = $_product->getData('en_height');
+                $savedEnLength = $_product->getData('en_length');
+                $savedEnWidth = $_product->getData('en_width');
+                $savedEnHeight = $_product->getData('en_height');
 
                 if (isset($savedEnLength) && $savedEnLength) {
                     $product->setData('ts_dimensions_length', $savedEnLength)->getResource()->saveAttribute($product, 'ts_dimensions_length');

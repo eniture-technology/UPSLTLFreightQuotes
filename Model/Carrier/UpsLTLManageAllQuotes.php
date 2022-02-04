@@ -72,14 +72,11 @@ class UpsLTLManageAllQuotes
         $moduleTypesArr = $this->registry->registry('enitureModuleTypes');
         $quotesArr      = (array)$this->quotes;
         $quotesArr      = $this->removeErrorFromQuotes($quotesArr);
-
         $this->quotes = $quotesArr;
 
         $quotesCount = count($quotesArr);
-
         if ($quotesCount == 1) {
-            $servicesArr = $this->upsGetAllQuotes();
-            return $servicesArr;
+            return $this->upsGetAllQuotes();
         } elseif ($quotesCount > 1) {
             $smallModulesArr = array_filter($moduleTypesArr, function ($value) {
                 return ($value == 'small');
@@ -133,13 +130,13 @@ class UpsLTLManageAllQuotes
         $minimumCommonArr   = $this->getMinimumCommonQuotes($commonQuotesArr, $resultQuotes);
         $this->setOdwData($smallQuotesArr, $ltlQuotesArr, $minimumCommonArr);
         $minimumSmallRate   = $this->getMinimumSmallQuotesRate($minimumCommonArr, $smallQuotesArr);
-        $ltlQuotesArray     = $this->getLtlQuoteForMultishipping($minimumCommonArr, $ltlModulesArr, $ltlQuotesArr, $minimumSmallRate);
-        return $ltlQuotesArray;
+        return $this->getLtlQuoteForMultishipping($minimumCommonArr, $ltlModulesArr, $ltlQuotesArr, $minimumSmallRate);
     }
 
     /**
      * This function returns Ltl quotes for multi shipping
      * @param array $minimumCommonArr
+     * @param $ltlModulesArr
      * @param array $ltlQuotesArr
      * @param float $minimumSmallRate
      * @return array
@@ -147,10 +144,9 @@ class UpsLTLManageAllQuotes
     public function getLtlQuoteForMultishipping($minimumCommonArr, $ltlModulesArr, $ltlQuotesArr, $minimumSmallRate)
     {
         $ltlQuotesFinalArr = [];
-
         // if ltl quotes return nothing
         if (!empty($ltlQuotesArr)) {
-            foreach ($ltlQuotesArr as $mainkey => $originArr) {
+            foreach ($ltlQuotesArr as $mainKey => $originArr) {
                 $ltlRate = $minimumSmallRate;
 
                 foreach ($originArr as $key => $value) {
@@ -158,19 +154,19 @@ class UpsLTLManageAllQuotes
                         $ltlRate = $ltlRate + $value['rate'];
                     }
                 }
-                $ltlQuotesFinalArr[$mainkey][] = [
-                    'code'  => 'Freight',
-                    'title' => 'Freight '.$this->resiLabel,
-                    'rate'  => $ltlRate
+                $ltlQuotesFinalArr[$mainKey][] = [
+                    'code' => $mainKey.'_Freight',
+                    'title' => 'Freight ' . $this->resiLabel,
+                    'rate' => $ltlRate
                 ];
             }
         } else {
             if ($minimumSmallRate > 0) {
                 foreach ($ltlModulesArr as $key => $value) {
                     $ltlQuotesFinalArr[$key][] = [
-                        'code'  => 'Freight',
-                        'title' => 'Freight '.$this->resiLabel,
-                        'rate'  => $minimumSmallRate
+                        'code' => $key.'_Freight',
+                        'title' => 'Freight ' . $this->resiLabel,
+                        'rate' => $minimumSmallRate
                     ];
                 }
             }
@@ -189,30 +185,30 @@ class UpsLTLManageAllQuotes
         $resultQuotes
     ) {
         if (!empty($commonQuotesArr)) {
-            $minimumCommonQuotesArr = $commonQuotesArr;
+            $minComQuotesArr = $commonQuotesArr;
 
-            foreach ($resultQuotes as $mainkey => $originArr) {
+            foreach ($resultQuotes as $mainKey => $originArr) {
                 foreach ($originArr as $key => $value) {
-                    if (empty($minimumCommonQuotesArr)) {
-                        $minimumCommonQuotesArr[$key] = $value;
+                    if (empty($minComQuotesArr)) {
+                        $minComQuotesArr[$key] = $value;
                     }
-                    if (array_key_exists($key, $minimumCommonQuotesArr)) {
+                    if (array_key_exists($key, $minComQuotesArr)) {
                         if ($value['rate'] == '0') {
-                            if (isset($this->quotes[$mainkey][$key]->severity) && $this->quotes[$mainkey][$key]->severity == 'ERROR') {
+                            if (isset($this->quotes[$mainKey][$key]->severity) && $this->quotes[$mainKey][$key]->severity == 'ERROR') {
                                 continue;
                             }
                         }
-                        if ($value['rate'] < $minimumCommonQuotesArr[$key]['rate']) {
-                            $minimumCommonQuotesArr[$key] = $value;
+                        if ($value['rate'] < $minComQuotesArr[$key]['rate']) {
+                            $minComQuotesArr[$key] = $value;
                         }
                     }
                 }
             }
         } else {
-            $minimumCommonQuotesArr = [];
+            $minComQuotesArr = [];
         }
 
-        return $minimumCommonQuotesArr;
+        return $minComQuotesArr;
     }
 
     /**
@@ -225,30 +221,29 @@ class UpsLTLManageAllQuotes
         $minimumCommonArr,
         $smallQuotes
     ) {
-        $minimumSmallQuotes = [];
+        $minSmallQuotes = [];
         if (isset($smallQuotes) && !empty($smallQuotes)) {
-            foreach ($smallQuotes as $mainkey => $originArr) {
+            foreach ($smallQuotes as $originArr) {
                 foreach ($originArr as $key => $value) {
                     if (!array_key_exists($key, $minimumCommonArr)) {
-                        if (array_key_exists($key, $minimumSmallQuotes)) {
-                            if ($value['rate'] < $minimumSmallQuotes[$key]['rate']) {
-                                $minimumSmallQuotes[$key] = $value;
+                        if (array_key_exists($key, $minSmallQuotes)) {
+                            if ($value['rate'] < $minSmallQuotes[$key]['rate']) {
+                                $minSmallQuotes[$key] = $value;
                             }
                         } else {
-                            $minimumSmallQuotes[$key] = $value;
+                            $minSmallQuotes[$key] = $value;
                         }
                     }
                 }
             }
         }
-        $minSmallQuotesArray = array_merge($minimumSmallQuotes, $minimumCommonArr);
-        $sumMinSmall = array_sum(array_column($minSmallQuotesArray, 'rate'));
-        return $sumMinSmall;
+        $minSmallQuotesArray = array_merge($minSmallQuotes, $minimumCommonArr);
+        return array_sum(array_column($minSmallQuotesArray, 'rate'));
     }
 
     /**
      * This function put specific array to common array
-     * @param array $quotesArr
+     * @param $quotesArr
      * @return array
      */
     public function getAllQuotes($quotesArr)
@@ -273,17 +268,22 @@ class UpsLTLManageAllQuotes
 
         foreach ($this->ltlPackagesQuotes as $mainKey => $mainValue) {
             foreach ($mainValue as $key => $value) {
-                array_push($ltlOriginArr, $key);
+                if (!in_array($key, $ltlOriginArr)) {
+                    array_push($ltlOriginArr, $key);
+                }
             }
         }
 
         foreach ($this->smallPackagesQuotes as $mainKey => $mainValue) {
             foreach ($mainValue as $key => $value) {
-                array_push($smallOriginArr, $key);
+                if (!in_array($key, $smallOriginArr)) {
+                    array_push($smallOriginArr, $key);
+                }
             }
         }
 
         $commonValuesArr = array_intersect($ltlOriginArr, $smallOriginArr);
+
         if (!empty($commonValuesArr)) {
             $multiPackage = 'semi';
             if (count($commonValuesArr) == count($ltlOriginArr) && count($commonValuesArr) == count($smallOriginArr)) {
@@ -306,17 +306,17 @@ class UpsLTLManageAllQuotes
         if (isset($QuotesArr->error) && $QuotesArr->error) {
             $updatedArr = $QuotesArr;
         }
-        foreach ($QuotesArr as $mainkey => $mainvalue) {
-            if (isset($mainvalue->severity) && $mainvalue->severity == 'ERROR') {
-                $updatedArr[$mainkey] = $mainvalue;
+        foreach ($QuotesArr as $mainKey => $mainValue) {
+            if (isset($mainValue->severity) && $mainValue->severity == 'ERROR') {
+                $updatedArr[$mainKey] = $mainValue;
             }
 
-            if (isset($mainvalue->error) && $mainvalue->error) {
-                $updatedArr[$mainkey] = $mainvalue;
+            if (isset($mainValue->error) && $mainValue->error) {
+                $updatedArr[$mainKey] = $mainValue;
             }
 
-            if ((is_object($mainvalue) || is_array($mainvalue)) && !empty($mainvalue)) {
-                foreach ($mainvalue as $key => $value) {
+            if ((is_object($mainValue) || is_array($mainValue)) && !empty($mainValue)) {
+                foreach ($mainValue as $key => $value) {
                     if (isset($value->error) && $value->error == 1 && isset($value->dismissedProduct)) {
                         continue;
                     } elseif (isset($value->severity)
@@ -325,7 +325,7 @@ class UpsLTLManageAllQuotes
                     ) {
                         continue;
                     } else {
-                        $updatedArr[$mainkey][$key] = $value;
+                        $updatedArr[$mainKey][$key] = $value;
                     }
                 }
             }
@@ -334,35 +334,37 @@ class UpsLTLManageAllQuotes
     }
 
     /**
-     * This funtion add small min small quotes value in Ltl quotes
+     * This function add small min small quotes value in Ltl quotes
      * @param array $ltlQuotesArr
-     * @param int $minsmallRate
+     * @param int $minSmallRate
      * @return array
      */
-    public function updateLtlQuotes($ltlQuotesArr, $minsmallRate)
+    public function updateLtlQuotes($ltlQuotesArr, $minSmallRate)
     {
-        $appName = key($ltlQuotesArr);
-        $ltlQuotesArr = reset($ltlQuotesArr);
-        $updatedltlQuotesArr = [];
+        $updatedLtlQuotesArr = [];
         if (!empty($ltlQuotesArr)) {
-            foreach ($ltlQuotesArr as $key => $value) {
-                $minsmallRate += $value['rate'];
+            foreach ($ltlQuotesArr as $moduleKey => $moduleRates) {
+                $finalRate = $minSmallRate;
+                foreach ($moduleRates as $originKey => $originRates) {
+                    $finalRate += $originRates['rate'];
+                }
+                $updatedLtlQuotesArr[$moduleKey][] = [
+                    'code' => $moduleKey . '_Freight',
+                    'title' => 'Freight ' . $this->resiLabel,
+                    'rate' => $finalRate
+                ];
             }
-            $updatedltlQuotesArr[$appName][] = [
-                'code'  => 'Freight',
-                'title' => 'Freight '.$this->resiLabel,
-                'rate'  => $minsmallRate
-            ];
         } else {
             foreach ($this->ltlPackagesQuotes as $key => $value) {
-                $updatedltlQuotesArr[$key][] = [
-                    'code'  => 'Freight',
+                $updatedLtlQuotesArr[$key][] = [
+                    'code' => $key.'_Freight',
                     'title' => 'Freight',
-                    'rate'  => $minsmallRate
+                    'rate' => $minSmallRate
                 ];
             }
         }
-        return $updatedltlQuotesArr;
+
+        return $updatedLtlQuotesArr;
     }
 
     /**
@@ -370,25 +372,23 @@ class UpsLTLManageAllQuotes
      * @param array $smallArr
      * @return int
      */
-    public function findMininumSmall($smallArr)
+    public function findMinimumSmall($smallArr)
     {
-
         $smallArr = reset($smallArr);
         $counter = 1;
         $minimum = '0';
-        foreach ($smallArr as $origin => $data) {
+        foreach ($smallArr as $data) {
             if ($counter == 1) {
-                $minimum =  $data['rate'];
+                $minimum = $data['rate'];
                 $counter = 0;
             } else {
                 if ($data['rate'] < $minimum) {
-                    $minimum =  $data['rate'];
+                    $minimum = $data['rate'];
                 }
             }
         }
         return $minimum;
     }
-
 
     /**
      * This function gets quotes result from all active modules
@@ -403,10 +403,9 @@ class UpsLTLManageAllQuotes
         foreach ($this->quotes as $key => $quote) {
             $helperId = $helpersArr[$key];
             $dataHelper = $this->objectManager->get("$helperId\Helper\Data");
-            $upsSmpkgResultData = $dataHelper->getQuotesResults($quote, $getMinimum, $isMultishipment, $this->scopeConfig);
-
-            if ($upsSmpkgResultData != false && $upsSmpkgResultData !== null) {
-                $resultArr[$key] = $upsSmpkgResultData;
+            $smPkgResultData = $dataHelper->getQuotesResults($quote, $getMinimum, $isMultishipment, $this->scopeConfig);
+            if ($smPkgResultData != false) {
+                $resultArr[$key] = $smPkgResultData;
             }
         }
         return $resultArr;
@@ -419,32 +418,32 @@ class UpsLTLManageAllQuotes
      */
     public function setOdwData($smallQuotesArr, $ltlQuotesArr, $minimumCommonArr)
     {
-        $smallQuotesArr = !empty($smallQuotesArr) ? reset($smallQuotesArr) : [];
-        $ltlQuotesArr   = !empty($ltlQuotesArr) ? reset($ltlQuotesArr) : [];
-        $allQuotesArr   = $smallQuotesArr + $ltlQuotesArr;
-
+        $smallQuotesArr = $smallQuotesArr ?? [];
+        $ltlQuotesArr = $ltlQuotesArr ?? [];
+        $allQuotesArr = $smallQuotesArr + $ltlQuotesArr;
         if (!empty($allQuotesArr)) {
-            foreach ($allQuotesArr as $origin => $data) {
-                $this->odwData[$origin] = $minimumCommonArr[$origin] ?? $data;
-            }
-            $this->setOrderDetailData();
-        }
-    }
-
-    public function setOrderDetailData()
-    {
-        $this->addQuotesIndex();
-        $orderDetail['residentialDelivery'] = 0;
-        $setPkgForOrderDetailReg = $this->registry->registry('setPackageDataForOrderDetail') ?? [];
-
-        if ($setPkgForOrderDetailReg && $this->odwData) {
-            foreach ($this->odwData as $origin => $value) {
-                foreach ($setPkgForOrderDetailReg[$origin]['item'] as $key => $data) {
-                    $setPkgForOrderDetailReg[$origin]['item'][$key]['isHazmatLineItem'] = $value['hazShipment'] ?? 'N';
+            foreach ($allQuotesArr as $module => $moduleQuote) {
+                foreach ($moduleQuote as $origin => $data) {
+                    $this->odwData[$module][$origin] = $minimumCommonArr[$origin] ?? $data;
                 }
             }
         }
-        $orderDetail['shipmentData'] = array_replace_recursive($setPkgForOrderDetailReg, $this->odwData);
+
+        $this->setOrderDetailData();
+    }
+
+    /**
+     * @info: This function will set order detail widget session for semi case. OWD = Order Detail Widget
+     */
+    public function setOrderDetailData()
+    {
+        $this->addQuotesIndex();
+        $setPkgForODWReg = $this->registry->registry('setPackageDataForOrderDetail') ?? [];
+
+        foreach ($this->odwData as $module => $odwDatum) {
+            $orderDetail[$module]['residentialDelivery'] = 0;
+            $orderDetail[$module]['shipmentData'] = array_replace_recursive($setPkgForODWReg, $odwDatum);
+        }
         // set order detail widget data
         $this->session->start();
         $this->session->setSemiOrderDetailSession($orderDetail);
@@ -453,13 +452,15 @@ class UpsLTLManageAllQuotes
     public function addQuotesIndex()
     {
         $dataArray = [];
-        foreach ($this->odwData as $key => $array) {
-            $resi = $array['resi']['residential'] ?? false;
-            $this->resiLabel = $array['resi']['label'];
-            unset($array['resi']);
-            $array['residentialDelivery'] = $resi;
-            $dataArray[$key] = ['quotes'=> $array];
+        foreach ($this->odwData as $module => $moduleData) {
+            foreach ($moduleData as $key => $array) {
+                $resi = $array['resi']['residential'] ?? false;
+                $this->resiLabel = $array['resi']['label'];
+                unset($array['resi']);
+                $array['residentialDelivery'] = $resi;
+                $dataArray[$key] = ['quotes' => $array];
+            }
+            $this->odwData[$module] = $dataArray;
         }
-        $this->odwData = $dataArray;
     }
 }

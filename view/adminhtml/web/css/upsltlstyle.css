@@ -147,11 +147,13 @@ button.en-btn:focus{
     width: 100%;
 }
 
-#row_UpsLtlUserGuide_fourth_upsltlUserGuide .label {
+#row_UpsLtlUserGuide_fourth_upsltlUserGuide .label,
+#row_UpsLtlPalletPackagingTab_fifth_upsltlPalletPackaging .label{
     display: none;
 }
 
-#row_UpsLtlUserGuide_fourth_upsltlUserGuide .value {
+#row_UpsLtlUserGuide_fourth_upsltlUserGuide .value,
+#row_UpsLtlPalletPackagingTab_fifth_upsltlPalletPackaging .value{
     width: 100%;
 }
 

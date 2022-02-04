@@ -12,7 +12,7 @@ if ($plan == 1) {
 <script>
     require(['jquery', 'domReady!'], function($){
             var carrierdiv = '#UpsLtlWarehouse_second-head';
-            upsLtlCurrentPlanNote($, '<?= $block->escapeHtml($block->upsLtlPlanNotice(), ['a', 'div']); ?>', carrierdiv);
+            upsLtlCurrentPlanNote($, '<?= $block->upsLtlPlanNotice(); ?>', carrierdiv);
 
             var canAddWh = <?= $block->escapeHtml($block->addWhRestriction()); ?>;
             upsLtlAddWarehouseRestriction(canAddWh);

@@ -81,6 +81,8 @@ class UpsLTLShipping extends AbstractCarrier implements CarrierInterface
      */
     private $setGlobalCarrier;
 
+    private $qty = 0;
+
     /**
      * @param ScopeConfigInterface $scopeConfig
      * @param ErrorFactory $rateErrorFactory
@@ -149,15 +151,14 @@ class UpsLTLShipping extends AbstractCarrier implements CarrierInterface
         $this->initClasses();
     }
 
-
     /**
-     *
+     * Initialize class objects
      */
     public function initClasses()
     {
         $this->adminConfig->_init($this->scopeConfig, $this->registry);
 
-        $this->generateReqData->_init($this->scopeConfig, $this->registry, $this->moduleManager, $this->request);
+        $this->generateReqData->_init($this->scopeConfig, $this->registry, $this->moduleManager, $this->request, $this->dataHelper);
 
         $this->manageAllQuotes->_init($this->scopeConfig, $this->registry, $this->session, $this->objectManager);
 
@@ -199,12 +200,12 @@ class UpsLTLShipping extends AbstractCarrier implements CarrierInterface
             return false;
         }
 
-
         $requestArr = $this->generateReqData->generateRequestArray($request, $upsLtlArr, $package['items'], $this->cart);
         if (empty($requestArr)) {
             return false;
         }
         $url = EnConstants::QUOTES_URL;
+
         $quotes = $this->dataHelper->upsLTLSendCurlRequest($url, $requestArr);
 
         // Debug point will print data if en_print_query=1
@@ -236,7 +237,9 @@ class UpsLTLShipping extends AbstractCarrier implements CarrierInterface
         $currentAction = $this->urlInterface->getCurrentUrl();
         $currentAction = strtolower($currentAction);
 
-        if (strpos($currentAction, 'shipping-information') !== false || strpos($currentAction, 'payment-information') !== false) {
+        if (strpos($currentAction, 'totals-information') !== false
+            || strpos($currentAction, 'shipping-information') !== false
+            || strpos($currentAction, 'payment-information') !== false) {
             $availableSessionQuotes = $this->session->getEnShippingQuotes(); // FROM SESSION
             $availableQuotes = (!empty($availableSessionQuotes)) ? $this->setCarrierRates($availableSessionQuotes) : null;
         } else {
@@ -258,8 +261,14 @@ class UpsLTLShipping extends AbstractCarrier implements CarrierInterface
         foreach ($items as $item) {
             $_product = $this->productLoader->create()->load($item->getProductId());
             $productType = $item->getRealProductType() ?? $_product->getTypeId();
-            if ($productType == 'simple' || $productType == 'configurable') {
-                $productQty = $item->getQty();
+
+            if ($productType == 'configurable') {
+                $this->qty = $item->getQty();
+            }
+
+            if ($productType == 'simple') {
+                $productQty = ($this->qty > 0) ? $this->qty : $item->getQty();
+                $this->qty = 0;
                 $originAddress = $this->shipmentPkg->upsLTLOriginAddress($request, $_product, $receiverZipCode);
 
                 $package['origin'][$_product->getId()] = $originAddress;
@@ -287,6 +296,8 @@ class UpsLTLShipping extends AbstractCarrier implements CarrierInterface
                     'product_insurance_active' => $setHzAndIns['insurance'],
                     'shipBinAlone' => $_product->getData('en_own_package'),
                     'vertical_rotation' => $_product->getData('en_vertical_rotation'),
+                    'shipPalletAlone' => $_product->getData('en_own_pallet'),
+                    'vertical_rotation_pallet' => $_product->getData('en_vertical_rotation_pallet'),
                 ];
 
                 $package['items'][$_product->getId()] = $lineItem;
@@ -375,8 +386,12 @@ class UpsLTLShipping extends AbstractCarrier implements CarrierInterface
      */
     private function getDims($_product, $dimOf)
     {
-        $dim = ($this->mageVersion < '2.2.5') ? 'en_' . $dimOf : 'ts_dimensions_' . $dimOf;
-        return $_product->getData($dim);
+        $dimValue = $_product->getData('ts_dimensions_'.$dimOf);
+        if($dimValue != null){
+            return $dimValue;
+        }
+
+        return $_product->getData('en_'.$dimOf);
     }
 
     /**
@@ -428,11 +443,13 @@ class UpsLTLShipping extends AbstractCarrier implements CarrierInterface
                         $carrierCode = $carriersArray[$carrierKey] ?? $this->_code;
                         $carrierTitle = $carriersTitle[$carrierKey] ?? $this->getConfigData('title');
                         $method = $this->rateMethodFactory->create();
+
                         $method->setCarrier($carrierCode);
                         $method->setCarrierTitle($carrierTitle);
                         $method->setMethod($carrier['code']);
                         $method->setMethodTitle($carrier['title']);
                         $method->setPrice($carrier['rate']);
+                        $method->setCost($carrier['rate']);
                         $result->append($method);
                     }
                 }

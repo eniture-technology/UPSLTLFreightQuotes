@@ -55,3 +55,24 @@
             jQuery("#"+divId).hide('slow');
         }, 5000);
     }
+
+    /**
+     * Test connection ajax call
+     * @param {object} $
+     * @param {string} ajaxURL
+     * @returns {function}
+     */
+    function upsLTLPlanRefresh(e){
+        let ajaxURL = e.getAttribute('planRefAjaxUrl');
+        let parameters = {};
+        upsLtlAjaxRequest(parameters, ajaxURL, upsLtlPlanRefreshResponse);
+    }
+
+    /**
+     * Handle response
+     * @param {object} data
+     * @returns {void}
+     */
+    function upsLtlPlanRefreshResponse(data){
+        document.location.reload(true);
+    }

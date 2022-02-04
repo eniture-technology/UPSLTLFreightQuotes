@@ -9,7 +9,7 @@
 var config = {
     map: {
         '*': {
-            estimateRate : 'Eniture_UPSLTLFreightQuotes/js/estimaterate',
+            'Magento_Checkout/js/model/cart/totals-processor/default': 'Eniture_UPSLTLFreightQuotes/js/model/cart/totals-processor/default'
         }
     }
 };

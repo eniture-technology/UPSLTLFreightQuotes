@@ -1,7 +1,7 @@
 <script>
     require(['jquery','domReady!'], function($){
             var carrierdiv = '#UpsLtlUserGuide_fourth-head';
-            upsLtlCurrentPlanNote($, '<?= $block->escapeHtml($block->upsLtlPlanNotice(), ['a', 'div']); ?>', carrierdiv);
+            upsLtlCurrentPlanNote($, '<?= $block->upsLtlPlanNotice(); ?>', carrierdiv);
     });
 </script>
 <div class="user-guide">

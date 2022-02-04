@@ -7,7 +7,7 @@ $connMsg  = $block->upsLtlConnMsg();
     require(['jquery','domReady!'], function($){
             var carrierdiv = '#UpsLtlConnSettings_first-head';
             upsLtlNotesToggleHandling($, '<?= $block->escapeHtml($connMsg, ['a', 'div']); ?>', '.upsltl-conn-setting-note', carrierdiv);
-            upsLtlCurrentPlanNote($, '<?= $block->escapeHtml($planMsg, ['a', 'div']); ?>', carrierdiv);
+            upsLtlCurrentPlanNote($, '<?= $planMsg; ?>', carrierdiv);
     });
 </script>
 <div class="pp-buttons-container">

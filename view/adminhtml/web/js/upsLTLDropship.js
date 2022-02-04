@@ -44,7 +44,7 @@ require([
                                     }
                                 },
                                 error: function (result) {
-                                    console.log('no response !');
+                                    // console.log('no response !');
                                 }
                             });
                         }

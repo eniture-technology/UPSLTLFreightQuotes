@@ -54,6 +54,15 @@ class UserGuide extends Field
      */
     public function upsLtlPlanNotice()
     {
-        return $this->dataHelper->upsLtlSetPlanNotice();
+        $planRefreshUrl = $this->getPlanRefreshUrl();
+        return $this->dataHelper->upsLtlSetPlanNotice($planRefreshUrl);
+    }
+
+    /**
+     * @return url
+     */
+    public function getPlanRefreshUrl()
+    {
+        return $this->getbaseUrl().'upsltlfreightquotes/Test/PlanRefresh/';
     }
 }

@@ -1,6 +1,6 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../../../../lib/internal/Magento/Framework/App/etc/routes.xsd">
     <router id="admin">
-        <route id="upsltl_tab" frontName="orderdetailwidget">
+        <route id="upsltl_tab" frontName="orderdetailwidget_upsltl">
             <module name="Eniture_UPSLTLFreightQuotes" />
         </route>
     </router>

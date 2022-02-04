@@ -30,6 +30,10 @@ class UpsLTLGenerateRequestData
     private $scopeConfig;
 
     private $appConfigData = [];
+    /**
+     * @var object
+     */
+    private $dataHelper;
 
     /**
      * constructor of class that accepts request object
@@ -42,7 +46,8 @@ class UpsLTLGenerateRequestData
         $scopeConfig,
         $registry,
         $moduleManager,
-        $request
+        $request,
+        $dataHelper
     ) {
         $this->registry        = $registry;
         $this->scopeConfig     = $scopeConfig;
@@ -53,6 +58,7 @@ class UpsLTLGenerateRequestData
         $quoteSett = $quoteSett ?? [];
         $connSett  = $connSett ?? [];
         $this->appConfigData   = array_merge($quoteSett, $connSett);
+        $this->dataHelper      = $dataHelper;
     }
 
     /**
@@ -65,9 +71,9 @@ class UpsLTLGenerateRequestData
         $upsLtlArr= [
             'licenseKey'                => $this->getConfigData('upsltlLicnsKey'),
             'serverName'                => $this->request->getServer('SERVER_NAME'),
-            'carrierMode'               => $this->getConfigData('upsltlAccessLevel'),
+            'carrierMode'               => 'pro',
             'quotestType'               => 'ltl', // ltl / small
-            'version'                   => '1.0.1',
+            'version'                   => '1.0.3',
             'returnQuotesOnExceedWeight'=> $this->getConfigData('weightExeeds'),
             'api'                       => $this->getApiInfoArr(),
             'getDistance'               => $getDistance,
@@ -111,8 +117,10 @@ class UpsLTLGenerateRequestData
         }
         $smartPost = $this->registry->registry('fedexSmartPost');
 
+
+
         $requestArr = [
-            'apiVersion'                    => '2.0',
+            'apiVersion'                    => '3.0',
             'platform'                      => 'magento2',
             'binPackagingMultiCarrier'      => $this->binPackSuspend(),
             'autoResidentials'              => $autoResidential,
@@ -122,8 +130,9 @@ class UpsLTLGenerateRequestData
             'requestKey'                    => $cart->getQuote()->getId(),
             'carriers'                      => $carriers,
             'receiverAddress'               => $receiverAddress,
-            'commdityDetails'               => $itemsArr,
+            'commdityDetails'               => $itemsArr
         ];
+
         return  $requestArr;
     }
 
@@ -133,7 +142,7 @@ class UpsLTLGenerateRequestData
     public function binPackSuspend()
     {
         $return = "0";
-        if ($this->moduleManager->isEnabled('Eniture_BoxSizes')) {
+        if ($this->moduleManager->isEnabled('Eniture_StandardBoxSizes')) {
             $return = $this->scopeConfig->getValue("binPackaging/suspend/value", ScopeInterface::SCOPE_STORE) == "no" ? "1" : "0";
         }
         return $return;
@@ -171,6 +180,7 @@ class UpsLTLGenerateRequestData
                             $this->getConfigData('OfferLiftgateAsAnOption')) ? 'Y' : 'N';
 
         $shipperRelation = $this->getConfigData('shipperRelation');
+        $accountType = $this->getConfigData('upsltlAccountType');
 
         $apiArray = [
             'accessLevel'            => $this->getConfigData('upsltlAccessLevel'),
@@ -187,6 +197,7 @@ class UpsLTLGenerateRequestData
             'serviceCodeDescription' => 'UPS Freight LTL',
             'timeInTransitIndicator' => $this->getConfigData('dlrvyEstimates') ? 'Y' : 'N',
             'accessorial'            => ['liftgateDelivery' => $liftGate, 'residentialDelivery' => $residential],
+            'dimWeightBaseAccount'   => (isset($accountType) && $accountType == 'dimension') ? '1' : '0' ,
         ];
 
         if ($shipperRelation == 'ThirdParty') {
@@ -198,6 +209,16 @@ class UpsLTLGenerateRequestData
                 'payerState'       => $this->getConfigData('thirdPartyState'),
                 'payerCity'        => $this->getConfigData('thirdPartyCity')
             ];
+        }
+
+        if ($this->moduleManager->isEnabled('Eniture_PalletPackaging')) {
+            $apiArray['standardPackaging'] = $this->scopeConfig->getValue("palletPackaging/suspend/value", ScopeInterface::SCOPE_STORE) == "no" ? "1" : "0";
+            $palletsData = $this->getSavedPallets();
+            if(is_array($palletsData) && count($palletsData) > 0){
+                $apiArray['pallets'] = $palletsData;
+            }else{
+                $apiArray['pallets'] = [];
+            }
         }
 
         return  $apiArray;
@@ -232,5 +253,19 @@ class UpsLTLGenerateRequestData
         ];
 
         return  $receiverDataArr;
+    }
+
+    /**
+     * Return pallets array
+     * @return array
+     */
+    public function getSavedPallets()
+    {
+        $savedPallets = [];
+        if ($this->moduleManager->isEnabled('Eniture_PalletPackaging')) {
+            $palletPackagingHelper = $this->dataHelper->getPalletPackagingHelper();
+            $savedPallets = $palletPackagingHelper->fillPalletsData();
+        }
+        return $savedPallets;
     }
 }

@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Eniture\UPSLTLFreightQuotes\Model\Source;
 
 class UpsLtlAccessLevel implements \Magento\Framework\Option\ArrayInterface
