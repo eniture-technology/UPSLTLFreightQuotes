@@ -44,7 +44,7 @@ class UpsLTLAdminConfiguration
     public function setCarriersAndHelpersCodesGlobaly()
     {
         $this->setCodesGlobally('enitureCarrierCodes', 'ENUpsLTL');
-        $this->setCodesGlobally('enitureCarrierTitle', 'UPS LTL Freight Quotes');
+        $this->setCodesGlobally('enitureCarrierTitle', 'TForce LTL Freight Quotes');
         $this->setCodesGlobally('enitureHelpersCodes', '\Eniture\UPSLTLFreightQuotes');
         $this->setCodesGlobally('enitureActiveModules', $this->checkModuleIsEnabled());
         $this->setCodesGlobally('enitureModuleTypes', 'ltl');

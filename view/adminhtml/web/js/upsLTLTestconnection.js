@@ -16,14 +16,27 @@
      */
     function upsLTLTestConnectionAjaxCall($, ajaxURL){
         let commonId = '#UpsLtlConnSettings_first_';
-        let credentials = {
-            accountNumber       : $(commonId+'upsltlAccountNumber').val(),
-            username            : $(commonId+'upsltlUsername').val(),
-            password            : $(commonId+'upsltlPassword').val(),
-            authenticationKey   : $(commonId+'upsltlAuthenticationKey').val(),
-            pluginLicenseKey    : $(commonId+'upsltlLicnsKey').val(),
-            accessLevel         : $(commonId+'upsltlAccessLevel').val()
-        };
+        let endPoint = $(commonId + 'tforceEndPoint').val();
+        let credentials;
+        if (endPoint === '1') { 
+            credentials = {
+                endPoint            : 'legacy',
+                accountNumber       : $(commonId+'upsltlAccountNumber').val(),
+                username            : $(commonId+'upsltlUsername').val(),
+                password            : $(commonId+'upsltlPassword').val(),
+                authenticationKey   : $(commonId+'upsltlAuthenticationKey').val(),
+                pluginLicenseKey    : $(commonId+'upsltlLicnsKey').val()
+            };
+        }else{
+            credentials = {
+                endPoint            : 'tforce',
+                clientId            : $(commonId+'tforceClientId').val(),
+                clientSecret        : $(commonId+'tforceClientSecret').val(),
+                username            : $(commonId+'tforceUsername').val(),
+                password            : $(commonId+'tforcePassword').val(),
+                pluginLicenseKey    : $(commonId+'upsltlLicnsKey').val()
+            };
+        }
 
         upsLtlAjaxRequest(credentials, ajaxURL, upsLTLConnectSuccessFunction);
         

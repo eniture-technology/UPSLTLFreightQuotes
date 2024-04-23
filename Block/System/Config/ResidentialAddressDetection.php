@@ -158,7 +158,7 @@ class ResidentialAddressDetection extends Field
         return $this->getbaseUrl().'ResidentialAddressDetection/RAD/DefaultAddressType/';
     }
     /**
-     * Show UPS LTL Plan Notice
+     * Show TForce LTL Plan Notice
      * @return string
      */
     public function upsLtlPlanNotice()

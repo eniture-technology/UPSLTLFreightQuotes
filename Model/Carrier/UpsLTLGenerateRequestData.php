@@ -73,7 +73,7 @@ class UpsLTLGenerateRequestData
             'serverName'                => $this->request->getServer('SERVER_NAME'),
             'carrierMode'               => 'pro',
             'quotestType'               => 'ltl', // ltl / small
-            'version'                   => '1.0.3',
+            'version'                   => '1.1.0',
             'returnQuotesOnExceedWeight'=> $this->getConfigData('weightExeeds'),
             'api'                       => $this->getApiInfoArr(),
             'getDistance'               => $getDistance,
@@ -182,23 +182,33 @@ class UpsLTLGenerateRequestData
         $shipperRelation = $this->getConfigData('shipperRelation');
         $accountType = $this->getConfigData('upsltlAccountType');
 
+        $endPoint = $this->getConfigData('tforceEndPoint');
+
         $apiArray = [
-            'accessLevel'            => $this->getConfigData('upsltlAccessLevel'),
-            'APIKey'                 => $this->getConfigData('upsltlAuthenticationKey'),
-            'AccountNumber'          => $this->getConfigData('upsltlAccountNumber'),
-            'UserName'               => $this->getConfigData('upsltlUsername'),
-            'Password'               => $this->getConfigData('upsltlPassword'),
             'paymentCode'            => '10',
             'paymentDescription'     => 'PREPAID',
             'paymentType'            => $shipperRelation ?? 'Shipper',
             'handlingUnitWeight'     => $this->getConfigData('handlingUnitWeight'),
             'maxWeightPerHandlingUnit'     => $this->getConfigData('maxWeightPerUnit'),
             'serviceCode'            => '308',
-            'serviceCodeDescription' => 'UPS Freight LTL',
+            'serviceCodeDescription' => 'TForce Freight LTL',
             'timeInTransitIndicator' => $this->getConfigData('dlrvyEstimates') ? 'Y' : 'N',
             'accessorial'            => ['liftgateDelivery' => $liftGate, 'residentialDelivery' => $residential],
             'dimWeightBaseAccount'   => (isset($accountType) && $accountType == 'dimension') ? '1' : '0' ,
         ];
+
+        if(empty($endPoint) || $endPoint == '1'){
+            $apiArray['APIKey'] = $this->getConfigData('upsltlAuthenticationKey') ?? '';
+            $apiArray['AccountNumber'] = $this->getConfigData('upsltlAccountNumber') ?? '';
+            $apiArray['UserName'] = $this->getConfigData('upsltlUsername') ?? '';
+            $apiArray['Password'] = $this->getConfigData('upsltlPassword') ?? '';
+        }else{
+            $apiArray['requestForTForceQuotes'] = '1';
+            $apiArray['clientId'] = $this->getConfigData('tforceClientId') ?? '';
+            $apiArray['clientSecret'] = $this->getConfigData('tforceClientSecret') ?? '';
+            $apiArray['UserName'] = $this->getConfigData('tforceUsername') ?? '';
+            $apiArray['Password'] = $this->getConfigData('tforcePassword') ?? '';
+        }
 
         if ($shipperRelation == 'ThirdParty') {
             $apiArray['payerAddress'] = [

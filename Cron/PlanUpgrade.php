@@ -74,7 +74,12 @@ class PlanUpgrade
         $url = EnConstants::PLAN_URL;
         $this->curl->post($url, $postData);
         $output = $this->curl->getBody();
-        $result = json_decode($output, true);
+        
+        if(!empty($output) && is_string($output)){
+            $result = json_decode($output, true);
+        }else{
+            $result = [];
+        }
 
         $plan       = $result['pakg_group'] ?? '';
         $expireDay  = $result['pakg_duration'] ?? '';
@@ -95,7 +100,7 @@ class PlanUpgrade
         $this->saveConfigurations('eniture/ENUpsLTL/expiredate', "$expiryDate");
         $this->saveConfigurations('eniture/ENUpsLTL/storetype', "$planType");
         $this->saveConfigurations('eniture/ENUpsLTL/pakgprice', "$pakgPrice");
-        $this->saveConfigurations('eniture/ENUpsLTL/label', "Eniture - UPS LTL Freight Quotes");
+        $this->saveConfigurations('eniture/ENUpsLTL/label', "Eniture - TForce LTL Freight Quotes");
 
         $this->logger->info($output);
     }

@@ -73,7 +73,7 @@ class WarehouseTable extends Field
         return $this->dataHelper->checkAdvancePlan();
     }
     /**
-     * Show UPS LTL Plan Notice
+     * Show TForce LTL Plan Notice
      * @return string
      */
     public function upsLtlPlanNotice()

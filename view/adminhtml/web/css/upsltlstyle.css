@@ -161,7 +161,8 @@ button.en-btn:focus{
     text-align: center;
 }
 
-label[for="UpsLtlConnSettings_first_upsltlAccountNumber"]:after, label[for="UpsLtlConnSettings_first_upsltlUsername"]:after, label[for="UpsLtlConnSettings_first_upsltlPassword"]:after, label[for="UpsLtlConnSettings_first_upsltlAuthenticationKey"]:after, label[for="UpsLtlConnSettings_first_upsltlLicnsKey"]:after, label[for="UpsLtlConnSettings_first_upsltlAccessLevel"]:after{
+label[for="UpsLtlConnSettings_first_upsltlUsername"]:not(.mage-error):after, label[for="UpsLtlConnSettings_first_upsltlPassword"]:not(.mage-error):after, label[for="UpsLtlConnSettings_first_upsltlAuthenticationKey"]:not(.mage-error):after, label[for="UpsLtlConnSettings_first_upsltlLicnsKey"]:not(.mage-error):after
+, label[for="UpsLtlConnSettings_first_tforceClientId"]:not(.mage-error):after, label[for="UpsLtlConnSettings_first_tforceClientSecret"]:not(.mage-error):after{
     content: '*';
     color: red;
     padding: 5px;

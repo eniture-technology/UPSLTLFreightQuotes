@@ -81,6 +81,38 @@ class Data extends AbstractHelper
      * @var ObjectManagerInterface
      */
     private $objectManager;
+    /**
+     * @var string
+     */
+    private $labelAs;
+    /**
+     * @var string
+     */
+    private $dlrvyEstimates;
+    /**
+     * @var string
+     */
+    private $residentialDlvry;
+    /**
+     * @var string
+     */
+    private $liftGate;
+    /**
+     * @var string
+     */
+    private $OfferLiftgateAsAnOption;
+    /**
+     * @var string
+     */
+    private $RADforLiftgate;
+    /**
+     * @var string
+     */
+    private $hndlngFee;
+    /**
+     * @var string
+     */
+    private $symbolicHndlngFee;
 
     /**
      * @param Context $context
@@ -233,19 +265,16 @@ class Data extends AbstractHelper
     function quoteSettingsData()
     {
         $quoteSett = $this->getConfigData("UpsLtlQuoteSetting/third");
-        $fields = [
-            'labelAs'                   => 'labelAs',
-            'dlrvyEstimates'            => 'dlrvyEstimates',
-            'residentialDlvry'          => 'residentialDlvry',
-            'liftGate'                  => 'liftGate',
-            'OfferLiftgateAsAnOption'   => 'OfferLiftgateAsAnOption',
-            'RADforLiftgate'            => 'RADforLiftgate',
-            'hndlngFee'                 => 'hndlngFee',
-            'symbolicHndlngFee'         => 'symbolicHndlngFee',
-        ];
-        foreach ($fields as $key => $field) {
-            $this->$key = $quoteSett[$field] ?? '';
-        }
+        
+        $this->labelAs = $quoteSett['labelAs'] ?? '';
+        $this->dlrvyEstimates = $quoteSett['dlrvyEstimates'] ?? '0';
+        $this->residentialDlvry = $quoteSett['residentialDlvry'] ?? '';
+        $this->liftGate = $quoteSett['liftGate'] ?? '';
+        $this->OfferLiftgateAsAnOption = $quoteSett['OfferLiftgateAsAnOption'] ?? '';
+        $this->RADforLiftgate = $quoteSett['RADforLiftgate'] ?? '';
+        $this->hndlngFee = $quoteSett['hndlngFee'] ?? '';
+        $this->symbolicHndlngFee = $quoteSett['symbolicHndlngFee'] ?? '';
+
         $this->labelAs      = !empty(trim($this->labelAs)) ? $this->labelAs : 'Freight';
         $this->resiLabel    = ' with residential delivery';
         $this->lgLabel      = ' with lift gate delivery';
@@ -371,8 +400,18 @@ class Data extends AbstractHelper
     {
         $return = [];
         $whCollection = $this->fetchWarehouseWithID($data['location'], $data['locationId']);
-        $instore = json_decode($whCollection[0]['in_store'], true);
-        $locDel  = json_decode($whCollection[0]['local_delivery'], true);
+        
+        if(!empty($whCollection[0]['in_store']) && is_string($whCollection[0]['in_store'])){
+            $instore = json_decode($whCollection[0]['in_store'], true);
+        }else{
+            $instore = [];
+        }
+
+        if(!empty($whCollection[0]['local_delivery']) && is_string($whCollection[0]['local_delivery'])){
+            $locDel  = json_decode($whCollection[0]['local_delivery'], true);
+        }else{
+            $locDel = [];
+        }
 
         if ($instore) {
             $inStoreTitle = $instore['checkout_desc_store_pickup'];
@@ -409,10 +448,15 @@ class Data extends AbstractHelper
         try {
             $this->curl->post($url, $fieldString);
             $output = $this->curl->getBody();
-            $result = json_decode($output, $isAssocArray);
+            if(!empty($output) && is_string($output)){
+                $result = json_decode($output, $isAssocArray);
+            }else{
+                $result = ($isAssocArray) ? [] : '';
+            }
         } catch (\Throwable $e) {
             $result = [];
         }
+        
         return $result;
     }
 
@@ -464,7 +508,7 @@ class Data extends AbstractHelper
                 foreach ($quote as $key => $data) {
                     if (isset($data->serviceType)) {
                         $dlvryEsti = $data->transitTime ?? '';
-                        $append = !empty($dlvryEsti) ? ' (Estimated transit time of '.$dlvryEsti.' business days)' : '';
+                        $append = (!empty($dlvryEsti) && $this->dlrvyEstimates == '1') ? ' (Intransit Days: '.$dlvryEsti.')' : '';
 
                         $accss = $this->getAccessorial();
                         $price = $this->calculatePrice($data);
@@ -597,8 +641,10 @@ class Data extends AbstractHelper
         if (!(($this->isResi && $this->RADforLiftgate) || $this->liftGate) || $getCost) {
             if (isset($quotes->surcharges)) {
                 foreach ($quotes->surcharges as $key => $value) {
-                    if ($value->Type->Code == 'LIFTGATE') {
+                    if (isset($value->Type->Code) && $value->Type->Code == 'LIFTGATE') {
                         $lgCost = $value->Factor->Value;
+                    }else if(isset($value->code) && $value->code == 'LIFD'){
+                        $lgCost = $value->value;
                     }
                 }
             }
@@ -616,7 +662,7 @@ class Data extends AbstractHelper
         $hndlngFeeMarkup = $this->hndlngFee;
         $symbolicHndlngFee = $this->symbolicHndlngFee;
 
-        if (strlen($hndlngFeeMarkup) > 0) {
+        if (!empty($hndlngFeeMarkup) && strlen($hndlngFeeMarkup) > 0) {
             if ($symbolicHndlngFee == '%') {
                 $prcntVal = $hndlngFeeMarkup / 100 * $cost;
                 $grandTotal = $prcntVal + $cost;
@@ -780,14 +826,14 @@ class Data extends AbstractHelper
         $planRefreshLink = '';
         if (!empty($planRefreshUrl)) {
             $planRefreshLink = ', <a href="javascript:void(0)" id="ups-ltl-plan-refresh-link" planRefAjaxUrl = '.$planRefreshUrl.' onclick="upsLTLPlanRefresh(this)" >click here</a> to update the license info. Afterward, sign out of Magento and then sign back in';
-            $planMsg = __('The subscription to the UPS LTL Freight Quotes module is inactive. If you believe the subscription should be active and you recently changed plans (e.g. upgraded your plan), your firewall may be blocking confirmation from our licensing system. To resolve the situation, <a href="javascript:void(0)" id="plan-refresh-link" planRefAjaxUrl = '.$planRefreshUrl.' onclick="upsLTLPlanRefresh(this)" >click this link</a> and then sign in again. If this does not resolve the issue, log in to eniture.com and verify the license status.');
+            $planMsg = __('The subscription to the TForce LTL Freight Quotes module is inactive. If you believe the subscription should be active and you recently changed plans (e.g. upgraded your plan), your firewall may be blocking confirmation from our licensing system. To resolve the situation, <a href="javascript:void(0)" id="plan-refresh-link" planRefAjaxUrl = '.$planRefreshUrl.' onclick="upsLTLPlanRefresh(this)" >click this link</a> and then sign in again. If this does not resolve the issue, log in to eniture.com and verify the license status.');
         }else{
-            $planMsg = __('The subscription to the UPS LTL Freight Quotes module is inactive. Please log into eniture.com and update your license.');
+            $planMsg = __('The subscription to the TForce LTL Freight Quotes module is inactive. Please log into eniture.com and update your license.');
         }
 
         if (isset($planPackage) && !empty($planPackage)) {
             if (!empty($planPackage['planNumber']) && $planPackage['planNumber'] != '-1') {
-                $planMsg = __('The UPS LTL Freight Quotes from Eniture Technology is currently on the '.$planPackage['planName'].' and will renew on '.$planPackage['expiryDate'].'. If this does not reflect changes made to the subscription plan'.$planRefreshLink.'.');
+                $planMsg = __('The TForce LTL Freight Quotes from Eniture Technology is currently on the '.$planPackage['planName'].' and will renew on '.$planPackage['expiryDate'].'. If this does not reflect changes made to the subscription plan'.$planRefreshLink.'.');
             }
         }
 

@@ -1,5 +1,5 @@
 /**
- * UPS LTL Freight
+ * TForce LTL Freight
  *
  * @package EnableCity
  * @author Eniture

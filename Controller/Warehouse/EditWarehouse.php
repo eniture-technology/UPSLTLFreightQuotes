@@ -28,10 +28,7 @@ class EditWarehouse extends Action
      */
     public function execute()
     {
-        foreach ($this->getRequest()->getPostValue() as $key => $post) {
-            $editWhData[$key] = filter_var($post, FILTER_SANITIZE_STRING);
-        }
-
+        $editWhData = $this->getRequest()->getParams();
         $warehouseId   = $editWhData['edit_id'];
         $warehouseList  = $this->dataHelper->fetchWarehouseWithID('warehouse', $warehouseId);
 

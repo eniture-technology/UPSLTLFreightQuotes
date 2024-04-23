@@ -70,14 +70,13 @@ class OrderPlacebeforeSaveData implements ObserverInterface
     private function getData($order, $method, $orderDetailData, $multiShip)
     {
         $lg = $resi = false;
-        $shippingMethod = explode('_', $method);
-
+        $shippingMethod = empty($method) ? [] : explode('_', $method);
         /*These Lines are added for compatibility only*/
         $lgArray = ['always' => 1, 'asOption' => '', 'residentialLiftgate' => ''];
         $orderDetailData['residentialDelivery'] = 0;
         /*These Lines are added for compatibility only*/
 
-        $arr = (explode('+', $method));
+        $arr = empty($method) ? [] : explode('+', $method);
         if (in_array('LG', $arr)) {
             $orderDetailData['liftGateDelivery'] = $lgArray;
             $lg = true;
@@ -97,7 +96,7 @@ class OrderPlacebeforeSaveData implements ObserverInterface
                 $orderDetailData['shipmentData'][$key]['quotes'] = [
 
                     'code' => $shippingMethod[1],
-                    'title' => str_replace("UPS LTL Freight Quotes - ", "", $order->getShippingDescription()),
+                    'title' => str_replace("TForce LTL Freight Quotes - ", "", $order->getShippingDescription()),
                     'rate' => number_format((float)$order->getShippingAmount(), 2, '.', '')
                 ];
             }

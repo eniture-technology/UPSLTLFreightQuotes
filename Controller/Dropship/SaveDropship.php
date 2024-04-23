@@ -40,8 +40,9 @@ class SaveDropship extends Action
         $updateInspLd = 'no';
         $msg = 'Drop ship already exists.';
         $saveDsData = [];
-        foreach ($this->getRequest()->getPostValue() as $key => $post) {
-            $saveDsData[$key] = filter_var($post, FILTER_SANITIZE_STRING);
+
+        foreach ($this->getRequest()->getParams() as $key => $post) {
+            $saveDsData[$key] = htmlspecialchars($post, ENT_QUOTES);
         }
 
         $inputDataArr = $this->dataHelper->upsLTLOriginArray($saveDsData);

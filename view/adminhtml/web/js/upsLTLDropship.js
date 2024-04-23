@@ -75,7 +75,7 @@ require([
         $('body').on('click', '.upsltl-del-ds', function (event) {
             event.preventDefault();
             confirmation({
-                title: 'UPS LTL Freight Quotes',
+                title: 'TForce LTL Freight Quotes',
                 content: 'Warning! If you delete this location, Drop ship location settings will be disabled against products.',
                 actions: {
                     always: function () {},

@@ -29,10 +29,7 @@ class DeleteWarehouse extends Action
     public function execute()
     {
         $msg = '';
-        foreach ($this->getRequest()->getPostValue() as $key => $post) {
-            $deleteWhData[$key] = filter_var($post, FILTER_SANITIZE_STRING);
-        }
-        
+        $deleteWhData = $this->getRequest()->getParams();
         $deleteID = $deleteWhData['delete_id'];
         if ($deleteWhData['action'] == 'delete_warehouse') {
             $qry    = $this->dataHelper->deleteWarehouseSecData("warehouse_id='".$deleteID."'");

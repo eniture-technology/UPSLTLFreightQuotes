@@ -1,7 +1,7 @@
 <?php
 /**
- * UPS Small Package
- * @package     UPS Small Package
+ * TForce LTL Freight Quote
+ * @package     TForce LTL Freight Quote
  * @author      Eniture Technology
  */
 namespace Eniture\UPSLTLFreightQuotes\Model\Carrier;

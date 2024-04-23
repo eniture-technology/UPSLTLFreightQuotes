@@ -69,7 +69,7 @@ class TestConnection extends Field
         return $this->_toHtml();
     }
     /**
-     * Show UPS LTL Plan Notice
+     * Show TForce LTL Plan Notice
      * @return string
      */
     public function upsLtlPlanNotice()
@@ -80,7 +80,7 @@ class TestConnection extends Field
 
     public function upsLtlConnMsg()
     {
-        return '<div class="message message-notice notice upsltl-conn-setting-note"><div data-ui-id="messages-message-notice">Note! You must have a UPS account to use this application. If you do not have one, contact UPS at 800-463-3339 or <a target="_blank" href="https://www.ups.com/doapp/signup">register online</a>.</div></div>';
+        return '<div class="message message-notice notice upsltl-conn-setting-note"><div data-ui-id="messages-message-notice">Note! You must have a TForce account to use this application. If you do not have one, contact TForce at 800-463-3339 or <a target="_blank" href="https://www.ups.com/doapp/signup">register online</a>.</div></div>';
     }
 
     /**

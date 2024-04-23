@@ -288,10 +288,10 @@ class UpsLTLShipping extends AbstractCarrier implements CarrierInterface
                     'lineItemName' => $_product->getName(),
                     'piecesOfLineItem' => (int)$productQty,
                     'lineItemPrice' => $_product->getPrice(),
-                    'lineItemWeight' => number_format($weight, 2, '.', ''),
-                    'lineItemLength' => number_format($length, 2, '.', ''),
-                    'lineItemWidth' => number_format($width, 2, '.', ''),
-                    'lineItemHeight' => number_format($height, 2, '.', ''),
+                    'lineItemWeight' => number_format((float) $weight, 2, '.', ''),
+                    'lineItemLength' => number_format((float) $length, 2, '.', ''),
+                    'lineItemWidth' => number_format((float) $width, 2, '.', ''),
+                    'lineItemHeight' => number_format((float) $height, 2, '.', ''),
                     'isHazmatLineItem' => $setHzAndIns['hazmat'],
                     'product_insurance_active' => $setHzAndIns['insurance'],
                     'shipBinAlone' => $_product->getData('en_own_package'),
@@ -461,7 +461,11 @@ class UpsLTLShipping extends AbstractCarrier implements CarrierInterface
     public function printQuery()
     {
         $printQuery = 0;
-        parse_str(parse_url($this->request->getServer('HTTP_REFERER'), PHP_URL_QUERY), $query);
+        $query = [];
+        $url = parse_url($this->request->getServer('HTTP_REFERER'), PHP_URL_QUERY);
+        if(is_string($url)){
+            parse_str($url, $query);
+        }
 
         if (!empty($query)) {
             $printQuery = ($query['en_print_query']) ?? 0;

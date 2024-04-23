@@ -6,7 +6,7 @@
                 <resource id="Magento_Backend::stores">
                     <resource id="Magento_Backend::stores_settings">
                         <resource id="Magento_Config::config">
-                            <resource id="Eniture_UPSLTLFreightQuotes::config" title="UPS LTL Freight Quotes Settings" sortOrder="10" />
+                            <resource id="Eniture_UPSLTLFreightQuotes::config" title="TForce LTL Freight Quotes Settings" sortOrder="10" />
                         </resource>
                     </resource>
                 </resource>

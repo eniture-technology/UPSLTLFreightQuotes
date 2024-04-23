@@ -28,8 +28,8 @@ class EditDropship extends Action
      */
     public function execute()
     {
-        foreach ($this->getRequest()->getPostValue() as $key => $post) {
-            $editDsData[$key] = filter_var($post, FILTER_SANITIZE_STRING);
+        foreach ($this->getRequest()->getParams() as $key => $post) {
+            $editDsData[$key] = htmlspecialchars($post, ENT_QUOTES);
         }
 
         $getDropshipId  = $editDsData['edit_id'];

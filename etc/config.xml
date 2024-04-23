@@ -13,8 +13,8 @@
                 <price>0</price>
                 <model>Eniture\UPSLTLFreightQuotes\Model\Carrier\UpsLTLShipping</model>
                 <allowed_methods>UPS_FREIGHT</allowed_methods>
-                <name>UPS LTL Freight Quotes</name>
-                <title>UPS LTL Freight Quotes</title>
+                <name>TForce LTL Freight Quotes</name>
+                <title>TForce LTL Freight Quotes</title>
                 <specificerrmsg>This shipping method is not available. To use this shipping method, please contact us.</specificerrmsg>
             </ENUpsLTL>
         </carriers>

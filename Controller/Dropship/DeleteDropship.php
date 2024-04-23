@@ -28,10 +28,7 @@ class DeleteDropship extends Action
     public function execute()
     {
         $msg = '';
-        foreach ($this->getRequest()->getPostValue() as $key => $post) {
-            $deleteDsData[$key] = filter_var($post, FILTER_SANITIZE_STRING);
-        }
-
+        $deleteDsData = $this->getRequest()->getParams();
         $deleteID = $deleteDsData['delete_id'];
 
         if ($deleteDsData['action'] == 'delete_dropship') {

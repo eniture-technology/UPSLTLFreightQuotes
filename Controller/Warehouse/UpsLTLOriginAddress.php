@@ -44,8 +44,8 @@ class UpsLTLOriginAddress extends Action
      */
     public function execute()
     {
-        foreach ($this->getRequest()->getPostValue() as $key => $post) {
-            $data[$key] = filter_var($post, FILTER_SANITIZE_STRING);
+        foreach ($this->getRequest()->getParams() as $key => $post) {
+            $data[$key] = htmlspecialchars($post, ENT_QUOTES);
         }
 
         $originZip = isset($data['origin_zip']) ? $data['origin_zip'] : '';

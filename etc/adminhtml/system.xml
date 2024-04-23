@@ -3,11 +3,11 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
     <system>
         <tab id="UPSLTLFreightQuotes" translate="label" sortOrder="10">
-            <label>Eniture - UPS LTL Freight Quotes</label>
+            <label>Eniture - TForce LTL Freight Quotes</label>
         </tab>
         <section id="carriers" translate="label" type="text" sortOrder="320" showInDefault="1" showInWebsite="1" showInStore="1">
             <group id="ENUpsLTL" translate="label" type="text" sortOrder="0" showInDefault="1" showInWebsite="1" showInStore="1">
-                <label>Eniture - UPS LTL Freight Quotes</label>
+                <label>Eniture - TForce LTL Freight Quotes</label>
                 <field id="active" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Enabled For Checkout</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
@@ -20,33 +20,74 @@
             <resource>Eniture_UPSLTLFreightQuotes::config</resource>
             <group id="first" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Connection Settings</label>
+
+                <field id="tforceEndPoint" translate="label" type="select" sortOrder="2" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
+                    <label>Which API will you connect to?</label>
+                    <source_model>Eniture\UPSLTLFreightQuotes\Model\Source\ApiEndPoint</source_model>
+                </field>
+
+                <!-- New API -->
+                <field id="tforceClientId" translate="label" type="text" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Client ID</label>
+                    <validate>required-entry validate-length maximum-length-100</validate>
+                    <depends>
+                        <field id="tforceEndPoint">2</field>
+                    </depends>
+                </field>
+                <field id="tforceClientSecret" translate="label" type="text" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Client Secret</label>
+                    <validate>required-entry validate-length maximum-length-100</validate>
+                    <depends>
+                        <field id="tforceEndPoint">2</field>
+                    </depends>
+                </field>
+                <field id="tforceUsername" translate="label" type="text" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Username</label>
+                    <depends>
+                        <field id="tforceEndPoint">2</field>
+                    </depends>
+                </field>
+                <field id="tforcePassword" translate="label" type="text" sortOrder="6" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Password</label>
+                    <depends>
+                        <field id="tforceEndPoint">2</field>
+                    </depends>
+                </field>
+                <!-- Legacy API fields -->
                 <field id="upsltlAccountNumber" translate="label" type="text" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Account Number</label>
-                    <validate>required-entry</validate>
+                    <depends>
+                        <field id="tforceEndPoint">1</field>
+                    </depends>
                 </field>
                 <field id="upsltlUsername" translate="label" type="text" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Username</label>
                     <validate>required-entry</validate>
+                    <depends>
+                        <field id="tforceEndPoint">1</field>
+                    </depends>
                 </field>
                 <field id="upsltlPassword" translate="label" type="text" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Password</label>
                     <validate>required-entry</validate>
+                    <depends>
+                        <field id="tforceEndPoint">1</field>
+                    </depends>
                 </field>
                 <field id="upsltlAuthenticationKey" translate="label" type="text" sortOrder="6" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>UPS API Access Key</label>
+                    <label>API Access Key</label>
                     <validate>required-entry</validate>
+                    <depends>
+                        <field id="tforceEndPoint">1</field>
+                    </depends>
                 </field>
                 <field id="upsltlLicnsKey" translate="label" type="text" sortOrder="7" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Plugin License Key</label>
                     <validate>required-entry</validate>
                 </field>
-                <field id="upsltlAccessLevel" translate="label" type="select" sortOrder="7" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Access Level</label>
-                    <validate>required-entry</validate>
-                    <source_model>Eniture\UPSLTLFreightQuotes\Model\Source\UpsLtlAccessLevel</source_model>
-                </field>
                 <field id="upsltlAccountType" translate="label" type="select" sortOrder="8" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>UPS rates my freight based on weight and...</label>
+                    <label>TForce rates my freight based on weight and...</label>
                     <validate>required-entry</validate>
                     <source_model>Eniture\UPSLTLFreightQuotes\Model\Source\UpsLtlAccountType</source_model>
                 </field>
