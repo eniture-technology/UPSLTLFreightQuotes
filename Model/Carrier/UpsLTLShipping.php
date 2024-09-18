@@ -221,7 +221,6 @@ class UpsLTLShipping extends AbstractCarrier implements CarrierInterface
         }
 
         $quotesResult = $this->manageAllQuotes->getQuotesResultArr($quotes);
-
         $this->session->setEnShippingQuotes($quotesResult);
 
         $upsLtlQuotes = (!empty($quotesResult)) ? $this->setCarrierRates($quotesResult) : '';

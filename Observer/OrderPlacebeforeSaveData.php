@@ -76,7 +76,7 @@ class OrderPlacebeforeSaveData implements ObserverInterface
         $orderDetailData['residentialDelivery'] = 0;
         /*These Lines are added for compatibility only*/
 
-        $arr = empty($method) ? [] : explode('+', $method);
+        $arr = empty($method) ? [] : explode('xx', $method);
         if (in_array('LG', $arr)) {
             $orderDetailData['liftGateDelivery'] = $lgArray;
             $lg = true;

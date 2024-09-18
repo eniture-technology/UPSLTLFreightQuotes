@@ -608,10 +608,10 @@ class Data extends AbstractHelper
     {
         $accss = '';
         if ($this->residentialDlvry == '1' || $this->isResi) {
-            $accss .= '+R';
+            $accss .= 'xxR';
         }
         if (($lgOption || $this->liftGate) || ($this->RADforLiftgate && $this->isResi)) {
-            $accss .= '+LG';
+            $accss .= 'xxLG';
         }
 
         return $accss;

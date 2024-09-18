@@ -73,7 +73,7 @@ class UpsLTLGenerateRequestData
             'serverName'                => $this->request->getServer('SERVER_NAME'),
             'carrierMode'               => 'pro',
             'quotestType'               => 'ltl', // ltl / small
-            'version'                   => '1.1.0',
+            'version'                   => '1.1.1',
             'returnQuotesOnExceedWeight'=> $this->getConfigData('weightExeeds'),
             'api'                       => $this->getApiInfoArr(),
             'getDistance'               => $getDistance,
